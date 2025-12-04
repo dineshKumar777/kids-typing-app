@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { getLessonById, allLessons } from '../data/lessons/homeRow';
-import { useLessonStore, useUserStore } from '../store/lessonStore';
+import { useUserStore } from '../store/lessonStore';
 import { useSettingsStore } from '../store/settingsStore';
 import { useTyping, useKeyboardInput } from '../hooks';
 import { Keyboard, TextDisplay, HandGuide, TypingStats, LessonComplete } from '../components/Typing';
@@ -102,14 +102,6 @@ export default function LessonPage() {
     }
   }, [lesson, navigate]);
   
-  // Handle next text in lesson
-  const handleNextText = useCallback(() => {
-    if (lesson && currentTextIndex < lesson.texts.length - 1) {
-      setCurrentTextIndex(prev => prev + 1);
-      resetTyping();
-    }
-  }, [lesson, currentTextIndex, resetTyping]);
-  
   // Reset when lesson changes
   useEffect(() => {
     resetTyping();
@@ -185,7 +177,7 @@ export default function LessonPage() {
               <span className="text-6xl">📖</span>
             </div>
             <div className="space-y-4 text-lg text-center text-gray-700">
-              {lesson.texts.map((text, index) => (
+              {lesson.texts.map((text: string, index: number) => (
                 <p key={index}>{text}</p>
               ))}
             </div>

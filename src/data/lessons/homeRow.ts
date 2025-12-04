@@ -1,4 +1,4 @@
-import { Lesson } from '../types';
+import { Lesson } from '../../types';
 
 export const homeRowLessons: Lesson[] = [
   // Lesson 1: Introduction
