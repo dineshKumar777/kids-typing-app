@@ -36,7 +36,6 @@ export function useTyping({ text, onComplete, onKeystroke }: UseTypingOptions): 
   const [isComplete, setIsComplete] = useState(false);
   const [isStarted, setIsStarted] = useState(false);
   const [streak, setStreak] = useState(0);
-  const [maxStreak, setMaxStreak] = useState(0);
   
   const startTimeRef = useRef<number | null>(null);
   const [timeElapsed, setTimeElapsed] = useState(0);
@@ -101,11 +100,7 @@ export function useTyping({ text, onComplete, onKeystroke }: UseTypingOptions): 
     onKeystroke?.(keystroke);
     
     if (isCorrect) {
-      setStreak(prev => {
-        const newStreak = prev + 1;
-        setMaxStreak(current => Math.max(current, newStreak));
-        return newStreak;
-      });
+      setStreak(prev => prev + 1);
       setCurrentIndex(prev => prev + 1);
       
       // Check if complete
@@ -156,7 +151,6 @@ export function useTyping({ text, onComplete, onKeystroke }: UseTypingOptions): 
     setIsComplete(false);
     setIsStarted(false);
     setStreak(0);
-    setMaxStreak(0);
     setTimeElapsed(0);
     startTimeRef.current = null;
     if (timerRef.current) {
