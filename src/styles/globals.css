@@ -1,0 +1,207 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Custom fonts */
+body {
+  font-family: 'Fredoka', system-ui, sans-serif;
+  background-color: #F7F9FC;
+  color: #2C3E50;
+}
+
+/* Smooth scrolling */
+html {
+  scroll-behavior: smooth;
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #c1c1c1;
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #a1a1a1;
+}
+
+/* Focus styles for accessibility */
+*:focus-visible {
+  outline: 2px solid #4ECDC4;
+  outline-offset: 2px;
+}
+
+/* Disable text selection during typing */
+.typing-active {
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+/* Keyboard key styles */
+.keyboard-key {
+  @apply relative flex items-center justify-center rounded-lg font-mono text-sm font-medium;
+  @apply border-2 border-b-4 transition-all duration-100;
+  @apply bg-white border-gray-300 text-gray-700 hover:bg-gray-50;
+}
+
+.keyboard-key--highlighted {
+  @apply bg-primary-400 border-primary-500 text-white shadow-lg;
+}
+
+.keyboard-key--home {
+  @apply ring-2 ring-secondary-300 ring-inset;
+}
+
+.keyboard-key--pressed {
+  @apply bg-success border-success;
+  transform: translateY(2px);
+  border-bottom-width: 2px;
+}
+
+.keyboard-key--error {
+  @apply bg-error border-error animate-shake;
+}
+
+/* Text display styles */
+.text-display-char {
+  @apply relative inline-block transition-colors duration-100;
+}
+
+.text-display-char--correct {
+  @apply text-success;
+}
+
+.text-display-char--error {
+  @apply text-error bg-red-100 rounded;
+}
+
+.text-display-char--current {
+  @apply text-primary-600;
+}
+
+.text-display-char--pending {
+  @apply text-gray-400;
+}
+
+/* Cursor animation */
+@keyframes cursor-blink {
+  0%, 50% { opacity: 1; }
+  51%, 100% { opacity: 0; }
+}
+
+.cursor-blink {
+  animation: cursor-blink 1s infinite;
+}
+
+/* Star animation */
+@keyframes star-pop {
+  0% { transform: scale(0) rotate(-180deg); }
+  50% { transform: scale(1.2) rotate(0deg); }
+  100% { transform: scale(1) rotate(0deg); }
+}
+
+.star-pop {
+  animation: star-pop 0.5s ease-out;
+}
+
+/* Confetti animation */
+@keyframes confetti-fall {
+  0% {
+    transform: translateY(-100%) rotate(0deg);
+    opacity: 1;
+  }
+  100% {
+    transform: translateY(100vh) rotate(720deg);
+    opacity: 0;
+  }
+}
+
+.confetti {
+  animation: confetti-fall 3s ease-in forwards;
+}
+
+/* Shake animation for errors */
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  25% { transform: translateX(-5px); }
+  75% { transform: translateX(5px); }
+}
+
+.animate-shake {
+  animation: shake 0.3s ease-in-out;
+}
+
+/* Bounce animation */
+@keyframes bounce-soft {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-5px); }
+}
+
+.animate-bounce-soft {
+  animation: bounce-soft 0.5s ease-in-out;
+}
+
+/* Gradient backgrounds */
+.bg-gradient-primary {
+  background: linear-gradient(135deg, #4ECDC4 0%, #44A08D 100%);
+}
+
+.bg-gradient-secondary {
+  background: linear-gradient(135deg, #FFE66D 0%, #F7B731 100%);
+}
+
+.bg-gradient-success {
+  background: linear-gradient(135deg, #7CB342 0%, #558B2F 100%);
+}
+
+/* Lesson card hover effect */
+.lesson-card {
+  @apply transition-all duration-200;
+}
+
+.lesson-card:hover:not(:disabled) {
+  @apply shadow-lg -translate-y-1;
+}
+
+/* Stats card */
+.stats-card {
+  @apply bg-white rounded-2xl shadow-lg p-6;
+  @apply transition-all duration-200;
+}
+
+.stats-card:hover {
+  @apply shadow-xl;
+}
+
+/* Modal backdrop blur */
+.modal-backdrop {
+  @apply fixed inset-0 bg-black/50 backdrop-blur-sm;
+}
+
+/* Button press effect */
+.btn-press:active {
+  transform: translateY(2px);
+}
+
+/* Responsive text */
+@screen sm {
+  .text-responsive {
+    font-size: clamp(1rem, 2.5vw, 1.5rem);
+  }
+}
+
+/* Print styles */
+@media print {
+  .no-print {
+    display: none !important;
+  }
+}
