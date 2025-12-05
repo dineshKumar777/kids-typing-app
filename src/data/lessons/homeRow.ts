@@ -115,6 +115,8 @@ export const homeRowLessons: Lesson[] = [
   },
   
   // Lesson 8: Play fjkd
+  // NOTE: This is a canvas-based game in TypingClub (Phaser/Pixi.js)
+  // TODO: Implement custom game mode for keys f, j, d, k
   {
     id: 8,
     title: 'Play: fjkd',
@@ -234,6 +236,8 @@ export const homeRowLessons: Lesson[] = [
   },
   
   // Lesson 15: Play First 8 Keys
+  // NOTE: This is a canvas-based game in TypingClub (Phaser/Pixi.js)
+  // TODO: Implement custom game mode for first 8 home row keys
   {
     id: 15,
     title: 'Play: First 8 Keys',
@@ -273,17 +277,12 @@ export const homeRowLessons: Lesson[] = [
   // Lesson 17: Home Row Left Hand
   {
     id: 17,
-    title: 'Home Row: L. Hand',
+    title: 'Home Row: L Hand',
     subtitle: 'Left hand focus',
     type: 'focus',
     keys: ['a', 's', 'd', 'f', ' '],
     texts: [
-      'asdf asdf asdf asdf',
-      'fdsa fdsa fdsa fdsa',
-      'sad sad dad dad',
-      'fad fad add add',
-      'as as ad ad sf sf',
-      'asd asd fda fda',
+      'dad dada ad ada adad sad sada dasad fas fasd dada affa fada fasa saf fdds asdf',
     ],
     targetWPM: 15,
     minAccuracy: 85,
@@ -294,17 +293,12 @@ export const homeRowLessons: Lesson[] = [
   // Lesson 18: Home Row Right Hand
   {
     id: 18,
-    title: 'Home Row: R. Hand',
+    title: 'Home Row: R Hand',
     subtitle: 'Right hand focus',
     type: 'focus',
     keys: ['j', 'k', 'l', ';', ' '],
     texts: [
-      'jkl; jkl; jkl; jkl;',
-      ';lkj ;lkj ;lkj ;lkj',
-      'jk jk kl kl l; l;',
-      'jkl jkl ;lk ;lk',
-      'j; j; kl kl jl jl',
-      'jkl; ;lkj jkl; ;lkj',
+      'jk jk jjkk jlkj ;;;; lkjj jj;; lkjj lkjj lk;; jkl; jjkk lkj jjkk lkjj ;;;; llll kkkk jjjj jl jk kj klj lkj kljj kljj',
     ],
     targetWPM: 15,
     minAccuracy: 85,
@@ -321,12 +315,7 @@ export const homeRowLessons: Lesson[] = [
     keys: ['a', 's', 'd', 'f', 'g', 'h', 'j', 'k', 'l', ';', ' '],
     newKeys: ['g', 'h'],
     texts: [
-      'ggg hhh ggg hhh',
-      'gh gh gh gh gh',
-      'gg hh gg hh gg hh',
-      'fg fh jg jh fg jh',
-      'gf hf gj hj gf hj',
-      'fghj fghj fghj fghj',
+      'gggghhhhgggghhhhgghhgghhghghghghg',
     ],
     targetWPM: 10,
     minAccuracy: 80,
@@ -342,12 +331,7 @@ export const homeRowLessons: Lesson[] = [
     type: 'review',
     keys: ['a', 's', 'd', 'f', 'g', 'h', 'j', 'k', 'l', ';', ' '],
     texts: [
-      'asdfg hjkl; asdfg hjkl;',
-      'gf gf hj hj gh gh',
-      'had had gal gal',
-      'hag hag lag lag',
-      'ash ash gash gash',
-      'hall hall glad glad',
+      'gf ggf gf ggf hj hhj hj hhj gfgf hjhj gggf hhhj fghj fgf jhj fgfgf jhjhj ggf hhj gghh ghgh ghfj ggf hhj',
     ],
     targetWPM: 12,
     minAccuracy: 85,
@@ -363,12 +347,7 @@ export const homeRowLessons: Lesson[] = [
     type: 'practice',
     keys: ['a', 's', 'd', 'f', 'g', 'h', 'j', 'k', 'l', ';', ' '],
     texts: [
-      'glad glad flash flash',
-      'shag shag gall gall',
-      'half half lash lash',
-      'flag flag hash hash',
-      'shall shall dash dash',
-      'gash gash hall hall',
+      'glad glass gag had haha gal hal gaf hah haha gaga glad hala hal hasha shash gl',
     ],
     targetWPM: 15,
     minAccuracy: 85,
@@ -384,12 +363,7 @@ export const homeRowLessons: Lesson[] = [
     type: 'review',
     keys: ['a', 's', 'd', 'f', 'g', 'h', 'j', 'k', 'l', ';', ' '],
     texts: [
-      'a sad lad; a glad gal;',
-      'dad has a flask;',
-      'all shall fall;',
-      'a flash; a dash;',
-      'half a glass; half a salad;',
-      'ash falls; hall shags;',
+      'glad dad had half a glass as salad; dad shall ask glass flags had glass ask shall flask had slash jaff',
     ],
     targetWPM: 15,
     minAccuracy: 90,
@@ -398,6 +372,8 @@ export const homeRowLessons: Lesson[] = [
   },
   
   // Lesson 23: Play Home Row
+  // NOTE: This is a canvas-based game in TypingClub (Phaser/Pixi.js)
+  // TODO: Implement custom game mode for complete home row including g & h
   {
     id: 23,
     title: 'Play: Home Row',
