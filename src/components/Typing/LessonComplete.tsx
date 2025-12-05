@@ -1,3 +1,4 @@
+import { useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { Button, StarRating } from '../common';
 
@@ -22,6 +23,21 @@ export default function LessonComplete({
   onNext,
   hasNext,
 }: LessonCompleteProps) {
+  // Keyboard shortcuts
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Enter' && hasNext) {
+        e.preventDefault();
+        onNext();
+      } else if (e.key === ' ') {
+        e.preventDefault();
+        onRetry();
+      }
+    };
+    
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [hasNext, onNext, onRetry]);
   const formatTime = (seconds: number): string => {
     const mins = Math.floor(seconds / 60);
     const secs = seconds % 60;
@@ -87,6 +103,12 @@ export default function LessonComplete({
             Next Lesson →
           </Button>
         )}
+      </div>
+      
+      {/* Keyboard hints */}
+      <div className="mt-4 text-xs text-gray-400">
+        <span className="mr-4">⎵ Space to retry</span>
+        {hasNext && <span>↵ Enter for next lesson</span>}
       </div>
     </motion.div>
   );
