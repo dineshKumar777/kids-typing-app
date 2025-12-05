@@ -9,8 +9,8 @@ interface TextDisplayProps {
 
 function TextDisplay({ text, currentIndex, errors }: TextDisplayProps) {
   return (
-    <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-100">
-      <div className="font-mono text-2xl leading-relaxed tracking-wider text-center">
+    <div className="bg-white rounded-xl p-3 sm:p-4 lg:p-6 shadow-sm border border-gray-100">
+      <div className="font-mono text-base sm:text-lg lg:text-2xl leading-relaxed tracking-wider text-center">
         {text.split('').map((char, index) => {
           const isTyped = index < currentIndex;
           const isCurrent = index === currentIndex;
@@ -47,7 +47,7 @@ function TextDisplay({ text, currentIndex, errors }: TextDisplayProps) {
       </div>
       
       {/* Progress indicator */}
-      <div className="mt-4 h-2 bg-gray-100 rounded-full overflow-hidden">
+      <div className="mt-2 sm:mt-3 lg:mt-4 h-1.5 sm:h-2 bg-gray-100 rounded-full overflow-hidden">
         <motion.div
           className="h-full bg-primary-500 rounded-full"
           initial={{ width: 0 }}

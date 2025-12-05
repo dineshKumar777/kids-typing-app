@@ -55,12 +55,12 @@ export default function LessonComplete({
         initial={{ scale: 0 }}
         animate={{ scale: 1 }}
         transition={{ type: 'spring', delay: 0.2 }}
-        className="text-6xl mb-4"
+        className="text-5xl sm:text-6xl mb-3 sm:mb-4"
       >
         🎉
       </motion.div>
       
-      <h2 className="text-3xl font-display font-bold text-text mb-2">
+      <h2 className="text-2xl sm:text-3xl font-display font-bold text-text mb-2">
         {stars >= 4 ? 'Amazing!' : stars >= 3 ? 'Great Job!' : stars >= 2 ? 'Good Work!' : 'Keep Practicing!'}
       </h2>
       
@@ -70,25 +70,25 @@ export default function LessonComplete({
       </div>
       
       {/* Stats */}
-      <div className="bg-gray-50 rounded-xl p-4 mb-6">
-        <div className="grid grid-cols-2 gap-4">
+      <div className="bg-gray-50 rounded-xl p-3 sm:p-4 mb-4 sm:mb-6">
+        <div className="grid grid-cols-2 gap-3 sm:gap-4">
           <div>
-            <div className="text-sm text-gray-500">Speed</div>
-            <div className="text-xl font-bold text-primary-600">{wpm} WPM</div>
+            <div className="text-xs sm:text-sm text-gray-500">Speed</div>
+            <div className="text-lg sm:text-xl font-bold text-primary-600">{wpm} WPM</div>
           </div>
           <div>
-            <div className="text-sm text-gray-500">Accuracy</div>
-            <div className={`text-xl font-bold ${accuracy >= 90 ? 'text-success' : accuracy >= 70 ? 'text-secondary-600' : 'text-error'}`}>
+            <div className="text-xs sm:text-sm text-gray-500">Accuracy</div>
+            <div className={`text-lg sm:text-xl font-bold ${accuracy >= 90 ? 'text-success' : accuracy >= 70 ? 'text-secondary-600' : 'text-error'}`}>
               {accuracy}%
             </div>
           </div>
           <div>
-            <div className="text-sm text-gray-500">Time</div>
-            <div className="text-xl font-bold text-text">{formatTime(timeSpent)}</div>
+            <div className="text-xs sm:text-sm text-gray-500">Time</div>
+            <div className="text-lg sm:text-xl font-bold text-text">{formatTime(timeSpent)}</div>
           </div>
           <div>
-            <div className="text-sm text-gray-500">Points</div>
-            <div className="text-xl font-bold text-secondary-600">+{points}</div>
+            <div className="text-xs sm:text-sm text-gray-500">Points</div>
+            <div className="text-lg sm:text-xl font-bold text-secondary-600">+{points}</div>
           </div>
         </div>
       </div>

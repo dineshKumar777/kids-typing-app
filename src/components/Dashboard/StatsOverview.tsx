@@ -23,9 +23,9 @@ export default function StatsOverview({ stats, totalLessons }: StatsOverviewProp
     <motion.div
       initial={{ opacity: 0, y: -20 }}
       animate={{ opacity: 1, y: 0 }}
-      className="bg-white rounded-2xl shadow-lg p-6 mb-8"
+      className="bg-white rounded-2xl shadow-lg p-4 sm:p-6 mb-8"
     >
-      <div className="flex flex-wrap items-center justify-between gap-6">
+      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4 sm:gap-6">
         {/* Progress */}
         <div className="flex items-center gap-4">
           <ProgressRing progress={progressPercentage} size={70} />

@@ -20,32 +20,32 @@ function TypingStats({ wpm, accuracy, streak, timeElapsed, isActive }: TypingSta
     <motion.div 
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
-      className="flex items-center justify-center gap-8 bg-white rounded-xl p-4 shadow-sm border border-gray-100"
+      className="flex items-center justify-center gap-4 sm:gap-6 lg:gap-8 bg-white rounded-xl p-2 sm:p-3 lg:p-4 shadow-sm border border-gray-100"
     >
       {/* WPM */}
       <div className="text-center">
-        <div className="text-sm text-gray-500 font-medium">WPM</div>
+        <div className="text-xs sm:text-sm text-gray-500 font-medium">WPM</div>
         <motion.div 
           key={wpm}
           initial={{ scale: 1.2 }}
           animate={{ scale: 1 }}
-          className="text-2xl font-bold text-primary-600"
+          className="text-lg sm:text-xl lg:text-2xl font-bold text-primary-600"
         >
           {wpm}
         </motion.div>
       </div>
       
       {/* Divider */}
-      <div className="h-10 w-px bg-gray-200" />
+      <div className="h-8 sm:h-10 w-px bg-gray-200" />
       
       {/* Accuracy */}
       <div className="text-center">
-        <div className="text-sm text-gray-500 font-medium">Accuracy</div>
+        <div className="text-xs sm:text-sm text-gray-500 font-medium">Accuracy</div>
         <motion.div 
           key={accuracy}
           initial={{ scale: 1.2 }}
           animate={{ scale: 1 }}
-          className={`text-2xl font-bold ${
+          className={`text-lg sm:text-xl lg:text-2xl font-bold ${
             accuracy >= 90 ? 'text-success' : 
             accuracy >= 70 ? 'text-secondary-600' : 
             'text-error'
@@ -56,17 +56,17 @@ function TypingStats({ wpm, accuracy, streak, timeElapsed, isActive }: TypingSta
       </div>
       
       {/* Divider */}
-      <div className="h-10 w-px bg-gray-200" />
+      <div className="h-8 sm:h-10 w-px bg-gray-200" />
       
       {/* Streak */}
       <div className="text-center">
-        <div className="text-sm text-gray-500 font-medium">Streak</div>
+        <div className="text-xs sm:text-sm text-gray-500 font-medium">Streak</div>
         <div className="flex items-center gap-1">
           <motion.span 
             key={streak}
             initial={{ scale: 1.3 }}
             animate={{ scale: 1 }}
-            className="text-2xl font-bold text-secondary-600"
+            className="text-lg sm:text-xl lg:text-2xl font-bold text-secondary-600"
           >
             {streak}
           </motion.span>
@@ -83,12 +83,12 @@ function TypingStats({ wpm, accuracy, streak, timeElapsed, isActive }: TypingSta
       </div>
       
       {/* Divider */}
-      <div className="h-10 w-px bg-gray-200" />
+      <div className="h-8 sm:h-10 w-px bg-gray-200" />
       
       {/* Time */}
       <div className="text-center">
-        <div className="text-sm text-gray-500 font-medium">Time</div>
-        <div className="text-2xl font-bold text-text">
+        <div className="text-xs sm:text-sm text-gray-500 font-medium">Time</div>
+        <div className="text-lg sm:text-xl lg:text-2xl font-bold text-text">
           {formatTime(timeElapsed)}
         </div>
       </div>

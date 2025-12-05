@@ -1,4 +1,4 @@
-import { memo } from 'react';
+import React, { memo } from 'react';
 import { motion } from 'framer-motion';
 import { keyboardLayout, fingerColors, keyMap } from '../../data/keyMappings';
 import { KeyInfo } from '../../types';
@@ -16,11 +16,11 @@ interface KeyProps {
   isPressed: boolean;
   isError: boolean;
   showFingerColors: boolean;
+  baseSize: number;
 }
 
-const Key = memo(function Key({ keyInfo, isHighlighted, isPressed, isError, showFingerColors }: KeyProps) {
-  const baseWidth = 44; // pixels
-  const width = (keyInfo.width || 1) * baseWidth + (keyInfo.width ? (keyInfo.width - 1) * 4 : 0);
+const Key = memo(function Key({ keyInfo, isHighlighted, isPressed, isError, showFingerColors, baseSize }: KeyProps) {
+  const width = (keyInfo.width || 1) * baseSize + (keyInfo.width ? (keyInfo.width - 1) * 4 : 0);
   
   const displayText = keyInfo.displayKey || keyInfo.key.toUpperCase();
   const fingerColor = showFingerColors ? fingerColors[keyInfo.finger] : undefined;
@@ -49,7 +49,7 @@ const Key = memo(function Key({ keyInfo, isHighlighted, isPressed, isError, show
       `}
       style={{
         width: `${width}px`,
-        height: '44px',
+        height: `${baseSize}px`,
         backgroundColor: isError ? '#FF6B6B' : isPressed ? '#7CB342' : isHighlighted ? '#4ECDC4' : undefined,
       }}
     >
@@ -78,11 +78,29 @@ function Keyboard({ highlightKey, pressedKey, isError = false, showFingerColors 
   const normalizedHighlight = highlightKey?.toLowerCase();
   const normalizedPressed = pressedKey?.toLowerCase();
   
+  // Responsive base size for keys
+  const getBaseSize = () => {
+    if (typeof window !== 'undefined') {
+      if (window.innerWidth < 640) return 24; // mobile
+      if (window.innerWidth < 768) return 28; // small tablet
+      if (window.innerWidth < 1024) return 32; // iPad
+    }
+    return 44; // desktop
+  };
+  
+  const [baseSize, setBaseSize] = React.useState(getBaseSize);
+  
+  React.useEffect(() => {
+    const handleResize = () => setBaseSize(getBaseSize());
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+  
   return (
-    <div className="bg-gray-100 rounded-2xl p-4 shadow-inner">
-      <div className="flex flex-col gap-1 items-center">
+    <div className="bg-gray-100 rounded-2xl p-2 sm:p-3 lg:p-4 shadow-inner">
+      <div className="flex flex-col gap-0.5 sm:gap-1 items-center">
         {keyboardLayout.map((row, rowIndex) => (
-          <div key={rowIndex} className="flex gap-1">
+          <div key={rowIndex} className="flex gap-0.5 sm:gap-1">
             {row.map((keyInfo) => {
               const keyLower = keyInfo.key.toLowerCase();
               const isHighlighted = normalizedHighlight === keyLower || 
@@ -98,6 +116,7 @@ function Keyboard({ highlightKey, pressedKey, isError = false, showFingerColors 
                   isPressed={isPressed}
                   isError={isError && isHighlighted}
                   showFingerColors={showFingerColors}
+                  baseSize={baseSize}
                 />
               );
             })}

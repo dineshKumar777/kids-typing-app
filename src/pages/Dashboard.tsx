@@ -10,16 +10,16 @@ export default function Dashboard() {
     <div className="min-h-screen bg-background">
       {/* Header */}
       <header className="bg-white shadow-sm sticky top-0 z-30">
-        <div className="max-w-7xl mx-auto px-4 py-4">
+        <div className="max-w-7xl mx-auto px-3 sm:px-4 py-3 sm:py-4">
           <div className="flex items-center justify-between">
-            <Link to="/" className="flex items-center gap-3">
-              <span className="text-3xl">⌨️</span>
-              <span className="text-2xl font-display font-bold text-primary-600">
+            <Link to="/" className="flex items-center gap-2 sm:gap-3">
+              <span className="text-2xl sm:text-3xl">⌨️</span>
+              <span className="text-xl sm:text-2xl font-display font-bold text-primary-600">
                 KidsType
               </span>
             </Link>
             
-            <nav className="flex items-center gap-6">
+            <nav className="flex items-center gap-3 sm:gap-6">
               <Link 
                 to="/" 
                 className="text-text font-medium hover:text-primary-600 transition-colors"
