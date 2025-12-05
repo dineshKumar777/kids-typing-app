@@ -12,6 +12,7 @@ export function useKeyboardInput({
   allowedKeys 
 }: UseKeyboardInputOptions) {
   const onKeyPressRef = useRef(onKeyPress);
+  const lastEventRef = useRef<{ key: string; time: number } | null>(null);
   
   // Keep callback ref updated
   useEffect(() => {
@@ -32,6 +33,15 @@ export function useKeyboardInput({
       event.preventDefault();
     }
     
+    // Deduplicate events (prevent double-firing from window + document listeners)
+    const now = Date.now();
+    if (lastEventRef.current && 
+        lastEventRef.current.key === event.key && 
+        now - lastEventRef.current.time < 50) {
+      return; // Skip duplicate event
+    }
+    lastEventRef.current = { key: event.key, time: now };
+    
     // Get the actual character
     let key = event.key;
     
@@ -51,10 +61,13 @@ export function useKeyboardInput({
   
   useEffect(() => {
     // Use capture phase for faster response
+    // Listen on both window and document for better iOS/iPad compatibility
     window.addEventListener('keydown', handleKeyDown, { capture: true });
+    document.addEventListener('keydown', handleKeyDown, { capture: true });
     
     return () => {
       window.removeEventListener('keydown', handleKeyDown, { capture: true });
+      document.removeEventListener('keydown', handleKeyDown, { capture: true });
     };
   }, [handleKeyDown]);
 }

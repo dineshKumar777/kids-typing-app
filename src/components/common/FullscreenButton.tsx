@@ -9,15 +9,37 @@ export default function FullscreenButton() {
     (document as any).mozFullScreenEnabled ||
     (document as any).msFullscreenEnabled;
 
+  // Refocus document to restore keyboard input (fixes iPad/iOS Chrome issue)
+  const refocusDocument = useCallback(() => {
+    // Small delay to let fullscreen transition complete
+    setTimeout(() => {
+      // Try to focus the document body to restore keyboard events
+      document.body.focus();
+      // Also try clicking on the document to ensure focus
+      document.documentElement.focus();
+      // Blur any active element first, then refocus
+      if (document.activeElement instanceof HTMLElement) {
+        document.activeElement.blur();
+      }
+      // Focus on body as fallback
+      document.body.click();
+    }, 100);
+  }, []);
+
   // Update state when fullscreen changes
   useEffect(() => {
     const handleFullscreenChange = () => {
-      setIsFullscreen(
-        !!document.fullscreenElement ||
+      const isNowFullscreen = !!document.fullscreenElement ||
         !!(document as any).webkitFullscreenElement ||
         !!(document as any).mozFullScreenElement ||
-        !!(document as any).msFullscreenElement
-      );
+        !!(document as any).msFullscreenElement;
+      
+      setIsFullscreen(isNowFullscreen);
+      
+      // Refocus document when entering fullscreen (fixes iPad Chrome keyboard issue)
+      if (isNowFullscreen) {
+        refocusDocument();
+      }
     };
 
     document.addEventListener('fullscreenchange', handleFullscreenChange);
@@ -31,7 +53,7 @@ export default function FullscreenButton() {
       document.removeEventListener('mozfullscreenchange', handleFullscreenChange);
       document.removeEventListener('MSFullscreenChange', handleFullscreenChange);
     };
-  }, []);
+  }, [refocusDocument]);
 
   const toggleFullscreen = useCallback(async () => {
     try {
