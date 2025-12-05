@@ -167,6 +167,27 @@ export function useTyping({ text, onComplete, onKeystroke }: UseTypingOptions): 
         if (timerRef.current) {
           clearInterval(timerRef.current);
         }
+        
+        // Calculate final stats and call onComplete
+        const finalTimeElapsed = startTimeRef.current 
+          ? Math.floor((Date.now() - startTimeRef.current - pausedTimeRef.current) / 1000)
+          : 0;
+        
+        const words = text.length / 5;
+        const minutes = finalTimeElapsed / 60;
+        const finalWpm = Math.round(words / minutes) || 0;
+        // Account for this final error in the count
+        const finalErrors = errors.length + 1;
+        const finalAccuracy = Math.round(((text.length - finalErrors) / text.length) * 100);
+        
+        onComplete?.({
+          wpm: finalWpm,
+          accuracy: finalAccuracy,
+          totalTime: finalTimeElapsed,
+          correctKeys: text.length - finalErrors,
+          totalKeys: text.length,
+          errors: [...errors, currentIndex],
+        });
       }
     }
   }, [currentIndex, text, isComplete, isStarted, errors, onComplete, onKeystroke]);
