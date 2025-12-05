@@ -1,6 +1,67 @@
 // Lesson Types
 export type LessonType = 'learn' | 'review' | 'practice' | 'game' | 'info' | 'focus';
 
+// Lesson type metadata for UI customization
+export interface LessonTypeInfo {
+  type: LessonType;
+  label: string;
+  description: string;
+  showTimer: boolean;
+  showNewKeys: boolean;
+  isGameMode: boolean;
+}
+
+export const LESSON_TYPE_CONFIG: Record<LessonType, LessonTypeInfo> = {
+  info: {
+    type: 'info',
+    label: 'Introduction',
+    description: 'Informational lesson with instructions, no typing required',
+    showTimer: false,
+    showNewKeys: false,
+    isGameMode: false,
+  },
+  learn: {
+    type: 'learn',
+    label: 'New Keys',
+    description: 'Introduces new keys to learn',
+    showTimer: false,
+    showNewKeys: true,
+    isGameMode: false,
+  },
+  review: {
+    type: 'review',
+    label: 'Review',
+    description: 'Reinforces previously learned keys',
+    showTimer: true,
+    showNewKeys: false,
+    isGameMode: false,
+  },
+  practice: {
+    type: 'practice',
+    label: 'Practice',
+    description: 'Timed drills for speed and accuracy',
+    showTimer: true,
+    showNewKeys: false,
+    isGameMode: false,
+  },
+  game: {
+    type: 'game',
+    label: 'Game',
+    description: 'Fun interactive typing exercises',
+    showTimer: false,
+    showNewKeys: false,
+    isGameMode: true,
+  },
+  focus: {
+    type: 'focus',
+    label: 'Focus',
+    description: 'Focused practice on specific patterns or problem areas',
+    showTimer: true,
+    showNewKeys: false,
+    isGameMode: false,
+  },
+};
+
 export interface Lesson {
   id: number;
   title: string;
