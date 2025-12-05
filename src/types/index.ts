@@ -75,6 +75,8 @@ export interface KeyInfo {
 // App Settings
 export interface AppSettings {
   soundEnabled: boolean;
+  keyboardSoundEnabled: boolean;
+  voiceOverEnabled: boolean;
   showHands: boolean;
   showKeyboard: boolean;
   theme: 'light' | 'dark';

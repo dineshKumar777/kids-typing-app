@@ -10,6 +10,8 @@ interface SettingsStore {
 
 const defaultSettings: AppSettings = {
   soundEnabled: true,
+  keyboardSoundEnabled: true,
+  voiceOverEnabled: false,
   showHands: true,
   showKeyboard: true,
   theme: 'light',

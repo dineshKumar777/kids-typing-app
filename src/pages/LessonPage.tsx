@@ -4,9 +4,9 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { getLessonById, allLessons } from '../data/lessons/homeRow';
 import { useUserStore } from '../store/lessonStore';
 import { useSettingsStore } from '../store/settingsStore';
-import { useTyping, useKeyboardInput } from '../hooks';
+import { useTyping, useKeyboardInput, useSound } from '../hooks';
 import { Keyboard, TextDisplay, HandGuide, LessonComplete } from '../components/Typing';
-import { Button, Modal } from '../components/common';
+import { Button, Modal, SettingsDropdown } from '../components/common';
 
 export default function LessonPage() {
   const { lessonId } = useParams<{ lessonId: string }>();
@@ -15,6 +15,7 @@ export default function LessonPage() {
   
   const { completeLession } = useUserStore();
   const { settings } = useSettingsStore();
+  const { playKeySound, speakKey } = useSound({ enabled: true });
   
   const [showComplete, setShowComplete] = useState(false);
   const [completionStats, setCompletionStats] = useState({
@@ -82,6 +83,20 @@ export default function LessonPage() {
   // Keyboard input hook
   useKeyboardInput({
     onKeyPress: (key) => {
+      // Play keyboard sound if enabled
+      if (settings.keyboardSoundEnabled) {
+        playKeySound();
+      }
+      
+      // Speak the next key if voice over is enabled
+      if (settings.voiceOverEnabled && currentKey) {
+        const nextIndex = currentIndex + 1;
+        const nextKey = currentText[nextIndex];
+        if (nextKey) {
+          speakKey(nextKey);
+        }
+      }
+      
       // Resume typing if was idle/paused
       if (isIdle) {
         resumeTyping();
@@ -123,6 +138,17 @@ export default function LessonPage() {
       clearTimeout(idleTimerRef.current);
     }
   }, [lessonId, showComplete]);
+  
+  // Speak the first key when voice over is enabled
+  useEffect(() => {
+    if (settings.voiceOverEnabled && currentText && currentText[0]) {
+      // Small delay to let the page render first
+      const timeout = setTimeout(() => {
+        speakKey(currentText[0]);
+      }, 500);
+      return () => clearTimeout(timeout);
+    }
+  }, [lessonId, settings.voiceOverEnabled, currentText, speakKey]);
   
   // Handle retry
   const handleRetry = useCallback(() => {
@@ -196,15 +222,18 @@ export default function LessonPage() {
               <p className="text-xs sm:text-sm text-gray-500">{lesson.subtitle}</p>
             </div>
             
-            <button
-              onClick={handleRetry}
-              className="flex items-center gap-1 sm:gap-2 text-gray-500 hover:text-text transition-colors text-sm sm:text-base"
-            >
-              <svg className="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-              </svg>
-              Restart
-            </button>
+            <div className="flex items-center gap-1 sm:gap-2">
+              <button
+                onClick={handleRetry}
+                className="p-2 text-gray-500 hover:text-primary-600 transition-colors rounded-lg hover:bg-gray-100"
+                title="Restart"
+              >
+                <svg className="w-5 h-5 sm:w-6 sm:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                </svg>
+              </button>
+              <SettingsDropdown />
+            </div>
           </div>
         </div>
       </header>
