@@ -6,7 +6,7 @@ import { useUserStore } from '../store/lessonStore';
 import { useSettingsStore } from '../store/settingsStore';
 import { useTyping, useKeyboardInput, useSound } from '../hooks';
 import { Keyboard, TextDisplay, HandGuide, LessonComplete, NewKeyIntroduction } from '../components/Typing';
-import { Button, Modal, SettingsDropdown } from '../components/common';
+import { Button, Modal, SettingsDropdown, FullscreenButton } from '../components/common';
 
 export default function LessonPage() {
   const { lessonId } = useParams<{ lessonId: string }>();
@@ -269,6 +269,7 @@ export default function LessonPage() {
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
                 </svg>
               </button>
+              <FullscreenButton />
               <SettingsDropdown />
             </div>
           </div>

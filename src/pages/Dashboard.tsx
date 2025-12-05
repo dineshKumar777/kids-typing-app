@@ -2,6 +2,7 @@ import { Link } from 'react-router-dom';
 import { useUserStore } from '../store/lessonStore';
 import { homeRowLessons } from '../data/lessons/homeRow';
 import { LessonGrid, StatsOverview } from '../components/Dashboard';
+import { FullscreenButton } from '../components/common';
 
 export default function Dashboard() {
   const { progress, stats } = useUserStore();
@@ -38,6 +39,7 @@ export default function Dashboard() {
               >
                 Badges
               </Link>
+              <FullscreenButton />
             </nav>
           </div>
         </div>
