@@ -229,6 +229,7 @@ export const useUserStore = create<UserStore>()(
 );
 
 // Helper function to check if a lesson is unlocked
+// Requires at least 3 stars on the previous lesson to unlock the next one
 export function isLessonUnlocked(lessonId: number, progress: Record<number, LessonProgress>): boolean {
   const lesson = allLessons.find(l => l.id === lessonId);
   if (!lesson) return false;
@@ -236,7 +237,7 @@ export function isLessonUnlocked(lessonId: number, progress: Record<number, Less
   // First lesson is always unlocked
   if (!lesson.unlockRequirement) return true;
   
-  // Check if required lesson is completed
+  // Check if required lesson is completed with at least 3 stars
   const requiredProgress = progress[lesson.unlockRequirement];
-  return requiredProgress?.completed ?? false;
+  return requiredProgress?.completed && requiredProgress?.stars >= 3;
 }

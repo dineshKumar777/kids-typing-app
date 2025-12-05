@@ -23,10 +23,13 @@ export default function LessonComplete({
   onNext,
   hasNext,
 }: LessonCompleteProps) {
+  // Need at least 3 stars to unlock next lesson
+  const canProceed = hasNext && stars >= 3;
+  
   // Keyboard shortcuts
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === 'Enter' && hasNext) {
+      if (e.key === 'Enter' && canProceed) {
         e.preventDefault();
         onNext();
       } else if (e.key === ' ') {
@@ -37,7 +40,7 @@ export default function LessonComplete({
     
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [hasNext, onNext, onRetry]);
+  }, [canProceed, onNext, onRetry]);
   const formatTime = (seconds: number): string => {
     const mins = Math.floor(seconds / 60);
     const secs = seconds % 60;
@@ -98,17 +101,24 @@ export default function LessonComplete({
         <Button variant="ghost" onClick={onRetry}>
           🔄 Try Again
         </Button>
-        {hasNext && (
+        {canProceed && (
           <Button variant="primary" onClick={onNext}>
             Next Lesson →
           </Button>
         )}
       </div>
       
+      {/* Encouragement message if not enough stars */}
+      {hasNext && !canProceed && (
+        <div className="mt-3 text-sm text-amber-600 bg-amber-50 rounded-lg px-4 py-2">
+          ⭐ Get 3 stars to unlock the next lesson!
+        </div>
+      )}
+      
       {/* Keyboard hints */}
       <div className="mt-4 text-xs text-gray-400">
         <span className="mr-4">⎵ Space to retry</span>
-        {hasNext && <span>↵ Enter for next lesson</span>}
+        {canProceed && <span>↵ Enter for next lesson</span>}
       </div>
     </motion.div>
   );
