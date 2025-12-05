@@ -320,13 +320,13 @@ export default function LessonPage() {
                 <AnimatePresence>
                   {!isStarted && (
                     <motion.div
-                      initial={{ x: -100, opacity: 0 }}
+                      initial={{ x: 100, opacity: 0 }}
                       animate={{ x: 0, opacity: 1 }}
-                      exit={{ x: -100, opacity: 0 }}
+                      exit={{ x: 100, opacity: 0 }}
                       transition={{ type: 'spring', damping: 20 }}
-                      className="fixed left-0 top-24 sm:top-28 z-20"
+                      className="fixed right-0 top-24 sm:top-28 z-20"
                     >
-                      <div className="bg-primary-500 text-white px-3 sm:px-4 py-2 sm:py-3 rounded-r-xl shadow-lg">
+                      <div className="bg-primary-500 text-white px-3 sm:px-4 py-2 sm:py-3 rounded-l-xl shadow-lg">
                         <div className="text-xs sm:text-sm font-bold uppercase tracking-wide">Start</div>
                         <div className="text-xs sm:text-sm font-bold uppercase tracking-wide">Typing</div>
                       </div>

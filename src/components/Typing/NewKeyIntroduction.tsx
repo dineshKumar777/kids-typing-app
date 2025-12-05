@@ -47,6 +47,7 @@ export default function NewKeyIntroduction({ newKeys, lessonKeys, practiceText, 
   const [showKeyFeedback, setShowKeyFeedback] = useState(false);
   const [wrongKeyFeedback, setWrongKeyFeedback] = useState(false);
   const [wrongKeyPressed, setWrongKeyPressed] = useState<string | null>(null);
+  const [isPracticeStarted, setIsPracticeStarted] = useState(false);
   
   const { settings } = useSettingsStore();
   const { playKeySound, speakKey } = useSound({ enabled: true });
@@ -102,6 +103,11 @@ export default function NewKeyIntroduction({ newKeys, lessonKeys, practiceText, 
   const handlePracticePress = useCallback((key: string) => {
     if (phase !== 'practice') return;
     
+    // Mark practice as started on first keypress
+    if (!isPracticeStarted) {
+      setIsPracticeStarted(true);
+    }
+    
     if (!startTime) {
       setStartTime(Date.now());
     }
@@ -146,7 +152,7 @@ export default function NewKeyIntroduction({ newKeys, lessonKeys, practiceText, 
         setErrors(prev => [...prev, practiceIndex]);
       }
     }
-  }, [phase, currentPracticeChar, practiceIndex, practiceText, startTime, errors, settings, playKeySound, speakKey, onComplete]);
+  }, [phase, currentPracticeChar, practiceIndex, practiceText, startTime, errors, settings, playKeySound, speakKey, onComplete, isPracticeStarted]);
   
   // Combined key handler
   useKeyboardInput({
@@ -332,8 +338,26 @@ export default function NewKeyIntroduction({ newKeys, lessonKeys, practiceText, 
     <motion.div
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
-      className="flex flex-col items-center justify-center py-8 px-4"
+      className="flex flex-col items-center justify-center py-8 px-4 relative"
     >
+      {/* Start Typing banner - shows before user starts practicing */}
+      <AnimatePresence>
+        {!isPracticeStarted && (
+          <motion.div
+            initial={{ x: 100, opacity: 0 }}
+            animate={{ x: 0, opacity: 1 }}
+            exit={{ x: 100, opacity: 0 }}
+            transition={{ type: 'spring', damping: 20 }}
+            className="fixed right-0 top-24 sm:top-28 z-20"
+          >
+            <div className="bg-primary-500 text-white px-3 sm:px-4 py-2 sm:py-3 rounded-l-xl shadow-lg">
+              <div className="text-xs sm:text-sm font-bold uppercase tracking-wide">Start</div>
+              <div className="text-xs sm:text-sm font-bold uppercase tracking-wide">Typing</div>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+      
       {/* Window indicator */}
       <div className="text-xs text-gray-400 mb-4">
         Set {Math.floor(practiceIndex / WINDOW_SIZE) + 1} of {Math.ceil(practiceText.length / WINDOW_SIZE)}
