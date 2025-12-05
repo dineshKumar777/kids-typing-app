@@ -1,0 +1,5 @@
+1. add sound.
+2. it should allow re-type mistaken chars again.
+3. less chars to train.
+4. fonts are way to small.
+5. have an option to disable keyboard and make the fonts bigger.
