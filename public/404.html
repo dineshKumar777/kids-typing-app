@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>KidsType</title>
+  <script>
+    // Single Page Apps for GitHub Pages
+    // MIT License
+    // This script takes the current URL and converts the path and query
+    // string into just a query string, and then redirects the browser
+    // to the new URL with only a query string and hash fragment.
+    
+    // Store the path in sessionStorage and redirect to home
+    const path = window.location.pathname;
+    const search = window.location.search;
+    const hash = window.location.hash;
+    
+    // Store the original path
+    sessionStorage.setItem('redirectPath', path + search + hash);
+    
+    // Redirect to the base URL
+    window.location.replace('/kids-typing-app/');
+  </script>
+</head>
+<body>
+  <p>Redirecting...</p>
+</body>
+</html>
