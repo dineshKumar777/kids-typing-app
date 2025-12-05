@@ -146,12 +146,12 @@ export function useTyping({ text, blockOnError = false, onComplete, onKeystroke 
         }
         
         const finalTimeElapsed = startTimeRef.current 
-          ? Math.floor((Date.now() - startTimeRef.current) / 1000)
-          : 0;
+          ? Math.max(1, Math.floor((Date.now() - startTimeRef.current - pausedTimeRef.current) / 1000))
+          : 1; // Minimum 1 second to avoid division by zero
         
         const words = text.length / 5;
         const minutes = finalTimeElapsed / 60;
-        const finalWpm = Math.round(words / minutes) || 0;
+        const finalWpm = Math.round(words / minutes);
         const finalAccuracy = Math.round(((text.length - errors.length) / text.length) * 100);
         
         onComplete?.({
@@ -201,12 +201,12 @@ export function useTyping({ text, blockOnError = false, onComplete, onKeystroke 
         
         // Calculate final stats and call onComplete
         const finalTimeElapsed = startTimeRef.current 
-          ? Math.floor((Date.now() - startTimeRef.current - pausedTimeRef.current) / 1000)
-          : 0;
+          ? Math.max(1, Math.floor((Date.now() - startTimeRef.current - pausedTimeRef.current) / 1000))
+          : 1; // Minimum 1 second to avoid division by zero
         
         const words = text.length / 5;
         const minutes = finalTimeElapsed / 60;
-        const finalWpm = Math.round(words / minutes) || 0;
+        const finalWpm = Math.round(words / minutes);
         // Account for this final error in the count
         const finalErrors = errors.length + 1;
         const finalAccuracy = Math.round(((text.length - finalErrors) / text.length) * 100);
