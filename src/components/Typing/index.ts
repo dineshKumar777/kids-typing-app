@@ -3,3 +3,4 @@ export { default as TextDisplay } from './TextDisplay';
 export { default as HandGuide } from './HandGuide';
 export { default as TypingStats } from './TypingStats';
 export { default as LessonComplete } from './LessonComplete';
+export { default as NewKeyIntroduction } from './NewKeyIntroduction';

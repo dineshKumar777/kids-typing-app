@@ -5,7 +5,7 @@ import { getLessonById, allLessons } from '../data/lessons/homeRow';
 import { useUserStore } from '../store/lessonStore';
 import { useSettingsStore } from '../store/settingsStore';
 import { useTyping, useKeyboardInput, useSound } from '../hooks';
-import { Keyboard, TextDisplay, HandGuide, LessonComplete } from '../components/Typing';
+import { Keyboard, TextDisplay, HandGuide, LessonComplete, NewKeyIntroduction } from '../components/Typing';
 import { Button, Modal, SettingsDropdown } from '../components/common';
 
 export default function LessonPage() {
@@ -29,6 +29,9 @@ export default function LessonPage() {
   const [isIdle, setIsIdle] = useState(false);
   const [currentCharPosition, setCurrentCharPosition] = useState<{ x: number; y: number } | null>(null);
   const idleTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  
+  // Check if this is a "learn" lesson with new keys - uses special introduction flow
+  const isNewKeyLesson = lesson?.type === 'learn' && lesson?.newKeys && lesson.newKeys.length > 0;
   
   // Get current text
   const currentText = lesson?.texts[currentTextIndex] || '';
@@ -120,7 +123,7 @@ export default function LessonPage() {
       
       handleKeyPress(key);
     },
-    enabled: !showComplete && !!lesson,
+    enabled: !showComplete && !!lesson && !isNewKeyLesson,
     allowedKeys: lesson?.keys,
   });
   
@@ -158,6 +161,38 @@ export default function LessonPage() {
     setIsIdle(false);
     resetTyping();
   }, [resetTyping]);
+  
+  // Handle new key introduction completion
+  const handleNewKeyIntroComplete = useCallback((stats: { wpm: number; accuracy: number; totalTime: number }) => {
+    // Calculate stars
+    let stars = 1;
+    if (stats.accuracy >= 95) stars = 5;
+    else if (stats.accuracy >= 90) stars = 4;
+    else if (stats.accuracy >= 85) stars = 3;
+    else if (stats.accuracy >= 80) stars = 2;
+    
+    // Calculate points
+    const basePoints = 100;
+    const accuracyBonus = Math.floor(stats.accuracy * 5);
+    const wpmBonus = Math.floor(stats.wpm * 10);
+    const starBonus = stars * 50;
+    const totalPoints = basePoints + accuracyBonus + wpmBonus + starBonus;
+    
+    setCompletionStats({
+      stars,
+      wpm: stats.wpm,
+      accuracy: stats.accuracy,
+      timeSpent: stats.totalTime,
+      points: totalPoints,
+    });
+    
+    // Save progress
+    if (lesson) {
+      completeLession(lesson.id, stats.wpm, stats.accuracy, stats.totalTime);
+    }
+    
+    setShowComplete(true);
+  }, [lesson, completeLession]);
   
   // Handle next lesson
   const handleNext = useCallback(() => {
@@ -268,31 +303,44 @@ export default function LessonPage() {
         {/* Typing Lesson */}
         {lesson.type !== 'info' && (
           <>
-            {/* Initial Start Typing banner - shows before user starts */}
-            <AnimatePresence>
-              {!isStarted && (
-                <motion.div
-                  initial={{ x: -100, opacity: 0 }}
-                  animate={{ x: 0, opacity: 1 }}
-                  exit={{ x: -100, opacity: 0 }}
-                  transition={{ type: 'spring', damping: 20 }}
-                  className="fixed left-0 top-24 sm:top-28 z-20"
-                >
-                  <div className="bg-primary-500 text-white px-3 sm:px-4 py-2 sm:py-3 rounded-r-xl shadow-lg">
-                    <div className="text-xs sm:text-sm font-bold uppercase tracking-wide">Start</div>
-                    <div className="text-xs sm:text-sm font-bold uppercase tracking-wide">Typing</div>
-                  </div>
-                </motion.div>
-              )}
-            </AnimatePresence>
-            
-            {/* Text Display with idle indicator */}
-            <div className="mb-4 sm:mb-6 lg:mb-8 relative">
-              {/* Idle indicator - positioned above current character */}
-              <AnimatePresence>
-                {isStarted && isIdle && currentKey && currentCharPosition && (
-                  <motion.div
-                    initial={{ y: 10, opacity: 0 }}
+            {/* New Key Introduction for 'learn' type lessons with newKeys */}
+            {isNewKeyLesson ? (
+              <div className="bg-white rounded-2xl shadow-lg overflow-hidden">
+                <NewKeyIntroduction
+                  key={lessonId}
+                  newKeys={lesson.newKeys!}
+                  lessonKeys={lesson.keys}
+                  practiceText={currentText}
+                  onComplete={handleNewKeyIntroComplete}
+                />
+              </div>
+            ) : (
+              <>
+                {/* Initial Start Typing banner - shows before user starts */}
+                <AnimatePresence>
+                  {!isStarted && (
+                    <motion.div
+                      initial={{ x: -100, opacity: 0 }}
+                      animate={{ x: 0, opacity: 1 }}
+                      exit={{ x: -100, opacity: 0 }}
+                      transition={{ type: 'spring', damping: 20 }}
+                      className="fixed left-0 top-24 sm:top-28 z-20"
+                    >
+                      <div className="bg-primary-500 text-white px-3 sm:px-4 py-2 sm:py-3 rounded-r-xl shadow-lg">
+                        <div className="text-xs sm:text-sm font-bold uppercase tracking-wide">Start</div>
+                        <div className="text-xs sm:text-sm font-bold uppercase tracking-wide">Typing</div>
+                      </div>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+                
+                {/* Text Display with idle indicator */}
+                <div className="mb-4 sm:mb-6 lg:mb-8 relative">
+                  {/* Idle indicator - positioned above current character */}
+                  <AnimatePresence>
+                    {isStarted && isIdle && currentKey && currentCharPosition && (
+                      <motion.div
+                        initial={{ y: 10, opacity: 0 }}
                     animate={{ y: 0, opacity: 1 }}
                     exit={{ y: 10, opacity: 0 }}
                     transition={{ type: 'spring', damping: 20 }}
@@ -384,6 +432,8 @@ export default function LessonPage() {
                 <HandGuide hand="left" activeKey={currentKey} />
                 <HandGuide hand="right" activeKey={currentKey} />
               </div>
+            )}
+              </>
             )}
           </>
         )}
