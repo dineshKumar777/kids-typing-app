@@ -15,7 +15,8 @@ const defaultSettings: AppSettings = {
   showHands: true,
   showKeyboard: true,
   theme: 'light',
-  fontSize: 'medium',
+  fontSize: 'normal',
+  accessibleMode: false,
 };
 
 export const useSettingsStore = create<SettingsStore>()(

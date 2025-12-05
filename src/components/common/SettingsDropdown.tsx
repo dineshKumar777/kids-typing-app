@@ -2,6 +2,13 @@ import { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useSettingsStore } from '../../store/settingsStore';
 
+const FONT_SIZES = [
+  { value: 'small', label: 'Small', size: 'text-xs' },
+  { value: 'normal', label: 'Normal', size: 'text-sm' },
+  { value: 'large', label: 'Large', size: 'text-base' },
+  { value: 'x-large', label: 'Very Large', size: 'text-lg' },
+] as const;
+
 export default function SettingsDropdown() {
   const [isOpen, setIsOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
@@ -18,6 +25,36 @@ export default function SettingsDropdown() {
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
+
+  // Handle accessible mode toggle
+  const handleAccessibleMode = (enabled: boolean) => {
+    if (enabled) {
+      // Enable accessible mode: big fonts, disable keyboard and hands
+      updateSettings({
+        accessibleMode: true,
+        fontSize: 'x-large',
+        showKeyboard: false,
+        showHands: false,
+      });
+    } else {
+      // Disable accessible mode: restore defaults
+      updateSettings({
+        accessibleMode: false,
+        fontSize: 'normal',
+        showKeyboard: true,
+        showHands: true,
+      });
+    }
+  };
+
+  // Handle font size change
+  const handleFontSize = (size: typeof settings.fontSize) => {
+    // If changing font size manually, disable accessible mode
+    updateSettings({
+      fontSize: size,
+      accessibleMode: size === 'x-large' && !settings.showKeyboard && !settings.showHands,
+    });
+  };
 
   return (
     <div className="relative" ref={dropdownRef}>
@@ -41,8 +78,51 @@ export default function SettingsDropdown() {
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: -10, scale: 0.95 }}
             transition={{ duration: 0.15 }}
-            className="absolute right-0 mt-2 w-56 bg-white rounded-xl shadow-lg border border-gray-100 py-2 z-50"
+            className="absolute right-0 mt-2 w-72 bg-white rounded-xl shadow-lg border border-gray-100 py-2 z-50"
           >
+            {/* Font Size Selection */}
+            <div className="px-4 py-3">
+              <div className="flex items-center justify-between gap-2">
+                {FONT_SIZES.map((font) => (
+                  <button
+                    key={font.value}
+                    onClick={() => handleFontSize(font.value)}
+                    className={`flex flex-col items-center p-2 rounded-lg transition-colors flex-1 ${
+                      settings.fontSize === font.value
+                        ? 'bg-primary-100 text-primary-600'
+                        : 'hover:bg-gray-100 text-gray-600'
+                    }`}
+                  >
+                    <span className={`font-medium ${font.size}`}>A</span>
+                    <span className="text-[10px] mt-0.5">{font.label}</span>
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Divider */}
+            <div className="border-t border-gray-100 my-2" />
+
+            {/* Extra Large (Accessible) Toggle */}
+            <div className="px-4 py-3 flex items-center justify-between hover:bg-gray-50">
+              <span className="text-sm font-medium text-gray-700">Extra Large (Accessible)</span>
+              <button
+                onClick={() => handleAccessibleMode(!settings.accessibleMode)}
+                className={`relative w-11 h-6 rounded-full transition-colors ${
+                  settings.accessibleMode ? 'bg-primary-500' : 'bg-gray-300'
+                }`}
+              >
+                <span
+                  className={`absolute top-0.5 left-0.5 w-5 h-5 bg-white rounded-full shadow transition-transform ${
+                    settings.accessibleMode ? 'translate-x-5' : 'translate-x-0'
+                  }`}
+                />
+              </button>
+            </div>
+
+            {/* Divider */}
+            <div className="border-t border-gray-100 my-2" />
+
             {/* Keyboard Sound Toggle */}
             <div className="px-4 py-3 flex items-center justify-between hover:bg-gray-50">
               <span className="text-sm font-medium text-gray-700">Keyboard Sound</span>
@@ -81,13 +161,14 @@ export default function SettingsDropdown() {
             <div className="border-t border-gray-100 my-2" />
 
             {/* Show Keyboard Toggle */}
-            <div className="px-4 py-3 flex items-center justify-between hover:bg-gray-50">
+            <div className={`px-4 py-3 flex items-center justify-between hover:bg-gray-50 ${settings.accessibleMode ? 'opacity-50' : ''}`}>
               <span className="text-sm font-medium text-gray-700">Show Keyboard</span>
               <button
-                onClick={() => updateSettings({ showKeyboard: !settings.showKeyboard })}
+                onClick={() => !settings.accessibleMode && updateSettings({ showKeyboard: !settings.showKeyboard })}
+                disabled={settings.accessibleMode}
                 className={`relative w-11 h-6 rounded-full transition-colors ${
                   settings.showKeyboard ? 'bg-primary-500' : 'bg-gray-300'
-                }`}
+                } ${settings.accessibleMode ? 'cursor-not-allowed' : ''}`}
               >
                 <span
                   className={`absolute top-0.5 left-0.5 w-5 h-5 bg-white rounded-full shadow transition-transform ${
@@ -98,13 +179,14 @@ export default function SettingsDropdown() {
             </div>
 
             {/* Show Hands Toggle */}
-            <div className="px-4 py-3 flex items-center justify-between hover:bg-gray-50">
+            <div className={`px-4 py-3 flex items-center justify-between hover:bg-gray-50 ${settings.accessibleMode ? 'opacity-50' : ''}`}>
               <span className="text-sm font-medium text-gray-700">Show Hands</span>
               <button
-                onClick={() => updateSettings({ showHands: !settings.showHands })}
+                onClick={() => !settings.accessibleMode && updateSettings({ showHands: !settings.showHands })}
+                disabled={settings.accessibleMode}
                 className={`relative w-11 h-6 rounded-full transition-colors ${
                   settings.showHands ? 'bg-primary-500' : 'bg-gray-300'
-                }`}
+                } ${settings.accessibleMode ? 'cursor-not-allowed' : ''}`}
               >
                 <span
                   className={`absolute top-0.5 left-0.5 w-5 h-5 bg-white rounded-full shadow transition-transform ${

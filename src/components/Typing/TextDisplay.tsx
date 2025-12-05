@@ -1,5 +1,6 @@
 import { memo, useRef, useEffect, useCallback } from 'react';
 import { motion } from 'framer-motion';
+import { useSettingsStore } from '../../store/settingsStore';
 
 interface TextDisplayProps {
   text: string;
@@ -8,9 +9,17 @@ interface TextDisplayProps {
   onCurrentCharPosition?: (position: { x: number; y: number } | null) => void;
 }
 
+const FONT_SIZE_CLASSES = {
+  'small': 'text-sm sm:text-base lg:text-lg',
+  'normal': 'text-base sm:text-lg lg:text-2xl',
+  'large': 'text-xl sm:text-2xl lg:text-4xl',
+  'x-large': 'text-4xl sm:text-5xl lg:text-7xl',
+};
+
 function TextDisplay({ text, currentIndex, errors, onCurrentCharPosition }: TextDisplayProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const charRefs = useRef<Map<number, HTMLSpanElement>>(new Map());
+  const { settings } = useSettingsStore();
   
   // Set ref for a character
   const setCharRef = useCallback((index: number, el: HTMLSpanElement | null) => {
@@ -36,9 +45,11 @@ function TextDisplay({ text, currentIndex, errors, onCurrentCharPosition }: Text
     }
   }, [currentIndex, onCurrentCharPosition, text]);
   
+  const fontSizeClass = FONT_SIZE_CLASSES[settings.fontSize] || FONT_SIZE_CLASSES['normal'];
+  
   return (
     <div ref={containerRef} className="bg-white rounded-xl p-3 sm:p-4 lg:p-6 shadow-sm border border-gray-100 relative">
-      <div className="font-mono text-base sm:text-lg lg:text-2xl leading-relaxed tracking-wider text-center">
+      <div className={`font-mono ${fontSizeClass} leading-relaxed tracking-wider text-center`}>
         {text.split('').map((char, index) => {
           const isTyped = index < currentIndex;
           const isCurrent = index === currentIndex;

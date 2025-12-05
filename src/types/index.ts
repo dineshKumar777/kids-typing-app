@@ -80,7 +80,8 @@ export interface AppSettings {
   showHands: boolean;
   showKeyboard: boolean;
   theme: 'light' | 'dark';
-  fontSize: 'small' | 'medium' | 'large';
+  fontSize: 'small' | 'normal' | 'large' | 'x-large';
+  accessibleMode: boolean;
 }
 
 // Badge/Achievement Types
