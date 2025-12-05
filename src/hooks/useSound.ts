@@ -25,58 +25,97 @@ function getAudioContext(): AudioContext {
   return audioContext;
 }
 
-// Generate a typewriter click sound using noise
+// Generate a realistic typewriter click-clack sound
 function playTypewriterClick(volume: number) {
   try {
     const ctx = getAudioContext();
     
-    // Resume context if suspended (needed for some browsers)
     if (ctx.state === 'suspended') {
       ctx.resume();
     }
     
     const now = ctx.currentTime;
-    const duration = 0.06; // Short click duration
     
-    // Create noise buffer for the click
-    const bufferSize = ctx.sampleRate * duration;
-    const buffer = ctx.createBuffer(1, bufferSize, ctx.sampleRate);
-    const data = buffer.getChannelData(0);
+    // === CLICK (key strike) ===
+    // Short burst of filtered noise for the initial "click"
+    const clickDuration = 0.015;
+    const clickBuffer = ctx.createBuffer(1, ctx.sampleRate * clickDuration, ctx.sampleRate);
+    const clickData = clickBuffer.getChannelData(0);
     
-    // Fill with noise that decays quickly (typewriter sound)
-    for (let i = 0; i < bufferSize; i++) {
-      const decay = Math.exp(-i / (bufferSize * 0.1)); // Fast exponential decay
-      data[i] = (Math.random() * 2 - 1) * decay;
+    for (let i = 0; i < clickData.length; i++) {
+      const t = i / clickData.length;
+      // Sharp attack, quick decay
+      const envelope = Math.exp(-t * 30);
+      clickData[i] = (Math.random() * 2 - 1) * envelope;
     }
     
-    // Create buffer source
-    const noiseSource = ctx.createBufferSource();
-    noiseSource.buffer = buffer;
+    const clickSource = ctx.createBufferSource();
+    clickSource.buffer = clickBuffer;
     
-    // Create a bandpass filter for more realistic typewriter sound
-    const bandpass = ctx.createBiquadFilter();
-    bandpass.type = 'bandpass';
-    bandpass.frequency.value = 2000; // Center frequency
-    bandpass.Q.value = 1.5; // Narrower band for more "clicky" sound
+    // Highpass filter for sharp "click"
+    const clickFilter = ctx.createBiquadFilter();
+    clickFilter.type = 'highpass';
+    clickFilter.frequency.value = 1500;
+    clickFilter.Q.value = 2;
     
-    // Create highpass to remove low rumble
-    const highpass = ctx.createBiquadFilter();
-    highpass.type = 'highpass';
-    highpass.frequency.value = 500;
+    const clickGain = ctx.createGain();
+    clickGain.gain.value = volume * 1.2;
     
-    // Gain node for volume control
-    const gainNode = ctx.createGain();
-    gainNode.gain.setValueAtTime(volume * 0.8, now);
-    gainNode.gain.exponentialRampToValueAtTime(0.001, now + duration);
+    clickSource.connect(clickFilter);
+    clickFilter.connect(clickGain);
+    clickGain.connect(ctx.destination);
     
-    // Connect: noise -> highpass -> bandpass -> gain -> output
-    noiseSource.connect(highpass);
-    highpass.connect(bandpass);
-    bandpass.connect(gainNode);
-    gainNode.connect(ctx.destination);
+    clickSource.start(now);
+    clickSource.stop(now + clickDuration);
     
-    noiseSource.start(now);
-    noiseSource.stop(now + duration);
+    // === CLACK (key return / bottom out) ===
+    // Slightly lower, more resonant sound
+    const clackDelay = 0.025; // Small delay after click
+    const clackDuration = 0.025;
+    const clackBuffer = ctx.createBuffer(1, ctx.sampleRate * clackDuration, ctx.sampleRate);
+    const clackData = clackBuffer.getChannelData(0);
+    
+    for (let i = 0; i < clackData.length; i++) {
+      const t = i / clackData.length;
+      // Slightly softer envelope for the "clack"
+      const envelope = Math.exp(-t * 20);
+      clackData[i] = (Math.random() * 2 - 1) * envelope;
+    }
+    
+    const clackSource = ctx.createBufferSource();
+    clackSource.buffer = clackBuffer;
+    
+    // Lower bandpass for more "thunky" clack
+    const clackFilter = ctx.createBiquadFilter();
+    clackFilter.type = 'bandpass';
+    clackFilter.frequency.value = 800;
+    clackFilter.Q.value = 3;
+    
+    const clackGain = ctx.createGain();
+    clackGain.gain.value = volume * 0.7;
+    
+    clackSource.connect(clackFilter);
+    clackFilter.connect(clackGain);
+    clackGain.connect(ctx.destination);
+    
+    clackSource.start(now + clackDelay);
+    clackSource.stop(now + clackDelay + clackDuration);
+    
+    // === Optional: Add a subtle resonant "ping" for metallic feel ===
+    const pingOsc = ctx.createOscillator();
+    pingOsc.type = 'sine';
+    pingOsc.frequency.value = 4000 + Math.random() * 500; // Slight variation
+    
+    const pingGain = ctx.createGain();
+    pingGain.gain.setValueAtTime(volume * 0.15, now);
+    pingGain.gain.exponentialRampToValueAtTime(0.001, now + 0.02);
+    
+    pingOsc.connect(pingGain);
+    pingGain.connect(ctx.destination);
+    
+    pingOsc.start(now);
+    pingOsc.stop(now + 0.02);
+    
   } catch {
     // Audio not supported, fail silently
   }
