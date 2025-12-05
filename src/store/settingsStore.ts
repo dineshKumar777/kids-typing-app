@@ -17,6 +17,7 @@ const defaultSettings: AppSettings = {
   theme: 'light',
   fontSize: 'normal',
   accessibleMode: false,
+  blockOnError: true,
 };
 
 export const useSettingsStore = create<SettingsStore>()(

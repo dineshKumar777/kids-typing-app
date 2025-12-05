@@ -82,6 +82,7 @@ export interface AppSettings {
   theme: 'light' | 'dark';
   fontSize: 'small' | 'normal' | 'large' | 'x-large';
   accessibleMode: boolean;
+  blockOnError: boolean;
 }
 
 // Badge/Achievement Types

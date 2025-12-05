@@ -3,6 +3,7 @@ import { Keystroke } from '../types';
 
 interface UseTypingOptions {
   text: string;
+  blockOnError?: boolean;
   onComplete?: (stats: TypingStats) => void;
   onKeystroke?: (keystroke: Keystroke) => void;
 }
@@ -22,6 +23,8 @@ interface UseTypingReturn {
   isComplete: boolean;
   isStarted: boolean;
   isPaused: boolean;
+  isBlockedOnError: boolean;
+  wrongKey: string | null;
   wpm: number;
   accuracy: number;
   streak: number;
@@ -33,12 +36,14 @@ interface UseTypingReturn {
   reset: () => void;
 }
 
-export function useTyping({ text, onComplete, onKeystroke }: UseTypingOptions): UseTypingReturn {
+export function useTyping({ text, blockOnError = false, onComplete, onKeystroke }: UseTypingOptions): UseTypingReturn {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [errors, setErrors] = useState<number[]>([]);
   const [isComplete, setIsComplete] = useState(false);
   const [isStarted, setIsStarted] = useState(false);
   const [isPaused, setIsPaused] = useState(false);
+  const [isBlockedOnError, setIsBlockedOnError] = useState(false);
+  const [wrongKey, setWrongKey] = useState<string | null>(null);
   const [streak, setStreak] = useState(0);
   
   const startTimeRef = useRef<number | null>(null);
@@ -46,6 +51,7 @@ export function useTyping({ text, onComplete, onKeystroke }: UseTypingOptions): 
   const timerRef = useRef<number | null>(null);
   const pausedTimeRef = useRef<number>(0); // Track total paused time
   const pauseStartRef = useRef<number | null>(null); // When pause started
+  const wrongKeyTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null); // Timer to clear wrong key
   
   // Timer effect
   useEffect(() => {
@@ -129,6 +135,8 @@ export function useTyping({ text, onComplete, onKeystroke }: UseTypingOptions): 
     if (isCorrect) {
       setStreak(prev => prev + 1);
       setCurrentIndex(prev => prev + 1);
+      setIsBlockedOnError(false); // Clear blocked state on correct key
+      setWrongKey(null); // Clear wrong key display
       
       // Check if complete
       if (currentIndex + 1 >= text.length) {
@@ -157,8 +165,31 @@ export function useTyping({ text, onComplete, onKeystroke }: UseTypingOptions): 
       }
     } else {
       setStreak(0);
-      setErrors(prev => [...prev, currentIndex]);
-      // Still advance on error (to match typing tutor behavior)
+      setIsBlockedOnError(true);
+      
+      // Clear any existing wrong key timer
+      if (wrongKeyTimerRef.current) {
+        clearTimeout(wrongKeyTimerRef.current);
+      }
+      
+      // Show wrong key and auto-hide after 500ms
+      setWrongKey(key);
+      wrongKeyTimerRef.current = setTimeout(() => {
+        setWrongKey(null);
+      }, 500);
+      
+      // Only record error once per position (avoid duplicate errors when blocked)
+      if (!errors.includes(currentIndex)) {
+        setErrors(prev => [...prev, currentIndex]);
+      }
+      
+      // If blockOnError is enabled, don't advance - user must type correct key
+      if (blockOnError) {
+        // Don't advance, stay on current character
+        return;
+      }
+      
+      // Otherwise, advance on error (original behavior)
       setCurrentIndex(prev => prev + 1);
       
       // Check if complete even with error
@@ -190,7 +221,7 @@ export function useTyping({ text, onComplete, onKeystroke }: UseTypingOptions): 
         });
       }
     }
-  }, [currentIndex, text, isComplete, isStarted, errors, onComplete, onKeystroke]);
+  }, [currentIndex, text, isComplete, isStarted, errors, blockOnError, onComplete, onKeystroke]);
   
   // Reset function
   const reset = useCallback(() => {
@@ -199,6 +230,8 @@ export function useTyping({ text, onComplete, onKeystroke }: UseTypingOptions): 
     setIsComplete(false);
     setIsStarted(false);
     setIsPaused(false);
+    setIsBlockedOnError(false);
+    setWrongKey(null);
     setStreak(0);
     setTimeElapsed(0);
     startTimeRef.current = null;
@@ -206,6 +239,9 @@ export function useTyping({ text, onComplete, onKeystroke }: UseTypingOptions): 
     pauseStartRef.current = null;
     if (timerRef.current) {
       clearInterval(timerRef.current);
+    }
+    if (wrongKeyTimerRef.current) {
+      clearTimeout(wrongKeyTimerRef.current);
     }
   }, []);
   
@@ -215,6 +251,8 @@ export function useTyping({ text, onComplete, onKeystroke }: UseTypingOptions): 
     isComplete,
     isStarted,
     isPaused,
+    isBlockedOnError,
+    wrongKey,
     wpm: wpm(),
     accuracy: accuracy(),
     streak,

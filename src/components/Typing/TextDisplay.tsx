@@ -1,11 +1,12 @@
 import { memo, useRef, useEffect, useCallback } from 'react';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import { useSettingsStore } from '../../store/settingsStore';
 
 interface TextDisplayProps {
   text: string;
   currentIndex: number;
   errors: number[];
+  wrongKey?: string | null;
   onCurrentCharPosition?: (position: { x: number; y: number } | null) => void;
 }
 
@@ -16,7 +17,7 @@ const FONT_SIZE_CLASSES = {
   'x-large': 'text-4xl sm:text-5xl lg:text-7xl',
 };
 
-function TextDisplay({ text, currentIndex, errors, onCurrentCharPosition }: TextDisplayProps) {
+function TextDisplay({ text, currentIndex, errors, wrongKey, onCurrentCharPosition }: TextDisplayProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const charRefs = useRef<Map<number, HTMLSpanElement>>(new Map());
   const { settings } = useSettingsStore();
@@ -55,6 +56,8 @@ function TextDisplay({ text, currentIndex, errors, onCurrentCharPosition }: Text
           const isCurrent = index === currentIndex;
           const isError = errors.includes(index);
           const displayChar = char === ' ' ? '\u00A0' : char; // Non-breaking space for visibility
+          const showWrongKey = isCurrent && wrongKey;
+          const wrongDisplayChar = wrongKey === ' ' ? '␣' : wrongKey;
           
           return (
             <span
@@ -64,18 +67,32 @@ function TextDisplay({ text, currentIndex, errors, onCurrentCharPosition }: Text
                 relative inline-block
                 ${isTyped && !isError ? 'text-success' : ''}
                 ${isTyped && isError ? 'text-error bg-red-100 rounded' : ''}
-                ${isCurrent ? 'text-primary-600' : ''}
+                ${isCurrent && !showWrongKey ? 'text-primary-600' : ''}
+                ${isCurrent && showWrongKey ? 'text-gray-300' : ''}
                 ${!isTyped && !isCurrent ? 'text-gray-400' : ''}
               `}
             >
               {displayChar}
+              {/* Wrong key overlay */}
+              <AnimatePresence>
+                {showWrongKey && (
+                  <motion.span
+                    initial={{ opacity: 0, scale: 1.2 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    exit={{ opacity: 0 }}
+                    className="absolute inset-0 flex items-center justify-center text-error font-bold"
+                  >
+                    {wrongDisplayChar}
+                  </motion.span>
+                )}
+              </AnimatePresence>
               {/* Cursor indicator */}
               {isCurrent && (
                 <motion.span
                   initial={{ opacity: 1 }}
                   animate={{ opacity: [1, 0, 1] }}
                   transition={{ duration: 1, repeat: Infinity }}
-                  className="absolute -bottom-1 left-0 w-full h-0.5 bg-primary-500"
+                  className={`absolute -bottom-1 left-0 w-full h-0.5 ${showWrongKey ? 'bg-error' : 'bg-primary-500'}`}
                 />
               )}
             </span>

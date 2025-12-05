@@ -42,12 +42,14 @@ export default function LessonPage() {
     accuracy,
     streak,
     currentKey,
+    wrongKey,
     handleKeyPress,
     pause: pauseTyping,
     resume: resumeTyping,
     reset: resetTyping,
   } = useTyping({
     text: currentText,
+    blockOnError: settings.blockOnError,
     onComplete: (stats) => {
       // Calculate stars
       let stars = 1;
@@ -322,6 +324,7 @@ export default function LessonPage() {
                 text={currentText}
                 currentIndex={currentIndex}
                 errors={errors}
+                wrongKey={wrongKey}
                 onCurrentCharPosition={setCurrentCharPosition}
               />
             </div>
