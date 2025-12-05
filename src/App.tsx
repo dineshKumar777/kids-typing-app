@@ -3,7 +3,7 @@ import { Dashboard, LessonPage } from './pages';
 
 function App() {
   return (
-    <BrowserRouter>
+    <BrowserRouter basename="/kids-typing-app">
       <Routes>
         <Route path="/" element={<Dashboard />} />
         <Route path="/lesson/:lessonId" element={<LessonPage />} />
