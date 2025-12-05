@@ -427,25 +427,27 @@ export default function NewKeyIntroduction({ newKeys, lessonKeys, practiceText, 
         </AnimatePresence>
       </div>
       
-      {/* Expected key hint when wrong */}
-      <AnimatePresence>
-        {wrongKeyFeedback && (
-          <motion.div
-            initial={{ opacity: 0, y: -10 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -10 }}
-            className="text-red-500 text-sm mb-4 flex items-center gap-2"
-          >
-            <span>Expected:</span>
-            <span className="font-mono font-bold text-lg px-2 py-1 bg-red-100 rounded">
-              {currentPracticeChar === ' ' ? '␣' : currentPracticeChar}
-            </span>
-          </motion.div>
-        )}
-      </AnimatePresence>
+      {/* Expected key hint when wrong - fixed height to prevent layout shift */}
+      <div className="h-8 mb-4 flex items-center justify-center">
+        <AnimatePresence>
+          {wrongKeyFeedback && (
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="text-red-500 text-sm flex items-center gap-2"
+            >
+              <span>Expected:</span>
+              <span className="font-mono font-bold text-lg px-2 py-1 bg-red-100 rounded">
+                {currentPracticeChar === ' ' ? '␣' : currentPracticeChar}
+              </span>
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </div>
       
       {/* Progress */}
-      <div className="w-full max-w-md">
+      <div className="w-full max-w-md mb-6">
         <div className="h-2 bg-gray-200 rounded-full overflow-hidden">
           <motion.div
             className="h-full bg-primary-500 rounded-full"
@@ -458,6 +460,25 @@ export default function NewKeyIntroduction({ newKeys, lessonKeys, practiceText, 
           {practiceIndex} / {practiceText.length}
         </div>
       </div>
+      
+      {/* Keyboard */}
+      {settings.showKeyboard && (
+        <div className="mb-6">
+          <Keyboard
+            highlightKey={currentPracticeChar}
+            pressedKey={undefined}
+            showFingerColors={true}
+          />
+        </div>
+      )}
+      
+      {/* Hand Guides */}
+      {settings.showHands && (
+        <div className="flex justify-center gap-6 sm:gap-8 lg:gap-12">
+          <HandGuide hand="left" activeKey={currentPracticeChar} />
+          <HandGuide hand="right" activeKey={currentPracticeChar} />
+        </div>
+      )}
     </motion.div>
   );
 }
