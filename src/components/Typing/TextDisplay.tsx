@@ -145,7 +145,7 @@ function TextDisplay({ text, currentIndex, errors, wrongKey, onCurrentCharPositi
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -20 }}
             transition={{ duration: 0.25 }}
-            className={`typing-text font-mono ${fontSizeClass} tracking-wide flex flex-col gap-4 sm:gap-6 lg:gap-8`}
+            className={`typing-text font-typing ${fontSizeClass} tracking-wide flex flex-col gap-4 sm:gap-6 lg:gap-8`}
           >
             {visibleLines.map((lineChars, lineIdx) => (
               <div key={visibleStartLine + lineIdx} className="flex justify-start flex-wrap gap-x-1">

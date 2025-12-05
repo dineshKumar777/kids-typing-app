@@ -71,6 +71,11 @@ html {
   @apply bg-error border-error animate-shake;
 }
 
+/* Typing area font */
+.font-typing {
+  font-family: 'Lato', system-ui, sans-serif;
+}
+
 /* Text display styles */
 .text-display-char {
   @apply relative inline-block transition-colors duration-100;
