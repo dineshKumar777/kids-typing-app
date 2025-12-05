@@ -1,15 +1,43 @@
-import { memo } from 'react';
+import { memo, useRef, useEffect, useCallback } from 'react';
 import { motion } from 'framer-motion';
 
 interface TextDisplayProps {
   text: string;
   currentIndex: number;
   errors: number[];
+  onCurrentCharPosition?: (position: { x: number; y: number } | null) => void;
 }
 
-function TextDisplay({ text, currentIndex, errors }: TextDisplayProps) {
+function TextDisplay({ text, currentIndex, errors, onCurrentCharPosition }: TextDisplayProps) {
+  const containerRef = useRef<HTMLDivElement>(null);
+  const charRefs = useRef<Map<number, HTMLSpanElement>>(new Map());
+  
+  // Set ref for a character
+  const setCharRef = useCallback((index: number, el: HTMLSpanElement | null) => {
+    if (el) {
+      charRefs.current.set(index, el);
+    } else {
+      charRefs.current.delete(index);
+    }
+  }, []);
+  
+  // Report current character position to parent
+  useEffect(() => {
+    const currentCharEl = charRefs.current.get(currentIndex);
+    if (currentCharEl && containerRef.current && onCurrentCharPosition) {
+      const charRect = currentCharEl.getBoundingClientRect();
+      const containerRect = containerRef.current.getBoundingClientRect();
+      
+      // Calculate position relative to container
+      onCurrentCharPosition({
+        x: charRect.left - containerRect.left + charRect.width / 2,
+        y: charRect.top - containerRect.top,
+      });
+    }
+  }, [currentIndex, onCurrentCharPosition, text]);
+  
   return (
-    <div className="bg-white rounded-xl p-3 sm:p-4 lg:p-6 shadow-sm border border-gray-100">
+    <div ref={containerRef} className="bg-white rounded-xl p-3 sm:p-4 lg:p-6 shadow-sm border border-gray-100 relative">
       <div className="font-mono text-base sm:text-lg lg:text-2xl leading-relaxed tracking-wider text-center">
         {text.split('').map((char, index) => {
           const isTyped = index < currentIndex;
@@ -18,11 +46,9 @@ function TextDisplay({ text, currentIndex, errors }: TextDisplayProps) {
           const displayChar = char === ' ' ? '\u00A0' : char; // Non-breaking space for visibility
           
           return (
-            <motion.span
+            <span
               key={index}
-              initial={isCurrent ? { scale: 1 } : false}
-              animate={isCurrent ? { scale: [1, 1.1, 1] } : {}}
-              transition={{ duration: 0.3, repeat: Infinity, repeatDelay: 0.7 }}
+              ref={(el) => setCharRef(index, el)}
               className={`
                 relative inline-block
                 ${isTyped && !isError ? 'text-success' : ''}
@@ -41,7 +67,7 @@ function TextDisplay({ text, currentIndex, errors }: TextDisplayProps) {
                   className="absolute -bottom-1 left-0 w-full h-0.5 bg-primary-500"
                 />
               )}
-            </motion.span>
+            </span>
           );
         })}
       </div>

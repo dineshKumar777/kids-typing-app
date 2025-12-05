@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { getLessonById, allLessons } from '../data/lessons/homeRow';
@@ -25,6 +25,9 @@ export default function LessonPage() {
     points: 0,
   });
   const [currentTextIndex, setCurrentTextIndex] = useState(0);
+  const [isIdle, setIsIdle] = useState(false);
+  const [currentCharPosition, setCurrentCharPosition] = useState<{ x: number; y: number } | null>(null);
+  const idleTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   
   // Get current text
   const currentText = lesson?.texts[currentTextIndex] || '';
@@ -39,6 +42,8 @@ export default function LessonPage() {
     streak,
     currentKey,
     handleKeyPress,
+    pause: pauseTyping,
+    resume: resumeTyping,
     reset: resetTyping,
   } = useTyping({
     text: currentText,
@@ -76,14 +81,53 @@ export default function LessonPage() {
   
   // Keyboard input hook
   useKeyboardInput({
-    onKeyPress: handleKeyPress,
+    onKeyPress: (key) => {
+      // Resume typing if was idle/paused
+      if (isIdle) {
+        resumeTyping();
+      }
+      
+      // Reset idle state on any keypress
+      setIsIdle(false);
+      
+      // Clear existing timer
+      if (idleTimerRef.current) {
+        clearTimeout(idleTimerRef.current);
+      }
+      
+      // Set new idle timer (show after 5 seconds of inactivity - longer for kids)
+      idleTimerRef.current = setTimeout(() => {
+        setIsIdle(true);
+        pauseTyping(); // Pause metrics calculation when idle
+      }, 5000);
+      
+      handleKeyPress(key);
+    },
     enabled: !showComplete && !!lesson,
     allowedKeys: lesson?.keys,
   });
   
+  // Cleanup idle timer
+  useEffect(() => {
+    return () => {
+      if (idleTimerRef.current) {
+        clearTimeout(idleTimerRef.current);
+      }
+    };
+  }, []);
+  
+  // Reset idle state when lesson changes or completes
+  useEffect(() => {
+    setIsIdle(false);
+    if (idleTimerRef.current) {
+      clearTimeout(idleTimerRef.current);
+    }
+  }, [lessonId, showComplete]);
+  
   // Handle retry
   const handleRetry = useCallback(() => {
     setShowComplete(false);
+    setIsIdle(false);
     resetTyping();
   }, [resetTyping]);
   
@@ -95,6 +139,7 @@ export default function LessonPage() {
       navigate(`/lesson/${nextLesson.id}`);
       setShowComplete(false);
       setCurrentTextIndex(0);
+      setIsIdle(false);
     } else {
       navigate('/');
     }
@@ -105,6 +150,7 @@ export default function LessonPage() {
     resetTyping();
     setCurrentTextIndex(0);
     setShowComplete(false);
+    setIsIdle(false);
   }, [lessonId, resetTyping]);
   
   // Check if lesson exists
@@ -190,7 +236,7 @@ export default function LessonPage() {
         {/* Typing Lesson */}
         {lesson.type !== 'info' && (
           <>
-            {/* Start Prompt - Fixed position badge that doesn't cause layout shift */}
+            {/* Initial Start Typing banner - shows before user starts */}
             <AnimatePresence>
               {!isStarted && (
                 <motion.div
@@ -208,12 +254,45 @@ export default function LessonPage() {
               )}
             </AnimatePresence>
             
-            {/* Text Display */}
-            <div className="mb-4 sm:mb-6 lg:mb-8">
+            {/* Text Display with idle indicator */}
+            <div className="mb-4 sm:mb-6 lg:mb-8 relative">
+              {/* Idle indicator - positioned above current character */}
+              <AnimatePresence>
+                {isStarted && isIdle && currentKey && currentCharPosition && (
+                  <motion.div
+                    initial={{ y: 10, opacity: 0 }}
+                    animate={{ y: 0, opacity: 1 }}
+                    exit={{ y: 10, opacity: 0 }}
+                    transition={{ type: 'spring', damping: 20 }}
+                    className="absolute z-10 pointer-events-none"
+                    style={{
+                      left: `${currentCharPosition.x - 20}px`,
+                      top: `${currentCharPosition.y - 45}px`,
+                    }}
+                  >
+                    <div className="relative">
+                      <div className="bg-primary-500 text-white px-3 py-1.5 rounded-sm shadow-lg flex items-center gap-2 text-sm font-medium whitespace-nowrap">
+                        <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 24 24">
+                          <rect x="6" y="4" width="4" height="16" rx="1" />
+                          <rect x="14" y="4" width="4" height="16" rx="1" />
+                        </svg>
+                        <span>Start Typing</span>
+                        <span className="bg-white/20 px-1.5 py-0.5 rounded font-mono font-bold">
+                          {currentKey === ' ' ? '␣' : currentKey}
+                        </span>
+                      </div>
+                      {/* Arrow pointing down to the character */}
+                      <div className="absolute left-[20px] -translate-x-1/2 -bottom-2 w-0 h-0 border-l-[8px] border-l-transparent border-r-[8px] border-r-transparent border-t-[8px] border-t-primary-500" />
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+              
               <TextDisplay
                 text={currentText}
                 currentIndex={currentIndex}
                 errors={errors}
+                onCurrentCharPosition={setCurrentCharPosition}
               />
             </div>
             

@@ -21,12 +21,15 @@ interface UseTypingReturn {
   errors: number[];
   isComplete: boolean;
   isStarted: boolean;
+  isPaused: boolean;
   wpm: number;
   accuracy: number;
   streak: number;
   timeElapsed: number;
   currentKey: string | undefined;
   handleKeyPress: (key: string) => void;
+  pause: () => void;
+  resume: () => void;
   reset: () => void;
 }
 
@@ -35,18 +38,22 @@ export function useTyping({ text, onComplete, onKeystroke }: UseTypingOptions): 
   const [errors, setErrors] = useState<number[]>([]);
   const [isComplete, setIsComplete] = useState(false);
   const [isStarted, setIsStarted] = useState(false);
+  const [isPaused, setIsPaused] = useState(false);
   const [streak, setStreak] = useState(0);
   
   const startTimeRef = useRef<number | null>(null);
   const [timeElapsed, setTimeElapsed] = useState(0);
   const timerRef = useRef<number | null>(null);
+  const pausedTimeRef = useRef<number>(0); // Track total paused time
+  const pauseStartRef = useRef<number | null>(null); // When pause started
   
   // Timer effect
   useEffect(() => {
-    if (isStarted && !isComplete) {
+    if (isStarted && !isComplete && !isPaused) {
       timerRef.current = window.setInterval(() => {
         if (startTimeRef.current) {
-          setTimeElapsed(Math.floor((Date.now() - startTimeRef.current) / 1000));
+          const totalElapsed = Date.now() - startTimeRef.current - pausedTimeRef.current;
+          setTimeElapsed(Math.floor(totalElapsed / 1000));
         }
       }, 1000);
     }
@@ -56,7 +63,27 @@ export function useTyping({ text, onComplete, onKeystroke }: UseTypingOptions): 
         clearInterval(timerRef.current);
       }
     };
-  }, [isStarted, isComplete]);
+  }, [isStarted, isComplete, isPaused]);
+  
+  // Pause function
+  const pause = useCallback(() => {
+    if (!isPaused && isStarted && !isComplete) {
+      setIsPaused(true);
+      pauseStartRef.current = Date.now();
+      if (timerRef.current) {
+        clearInterval(timerRef.current);
+      }
+    }
+  }, [isPaused, isStarted, isComplete]);
+  
+  // Resume function
+  const resume = useCallback(() => {
+    if (isPaused && pauseStartRef.current) {
+      pausedTimeRef.current += Date.now() - pauseStartRef.current;
+      pauseStartRef.current = null;
+      setIsPaused(false);
+    }
+  }, [isPaused]);
   
   // Calculate WPM (words per minute)
   const wpm = useCallback(() => {
@@ -150,9 +177,12 @@ export function useTyping({ text, onComplete, onKeystroke }: UseTypingOptions): 
     setErrors([]);
     setIsComplete(false);
     setIsStarted(false);
+    setIsPaused(false);
     setStreak(0);
     setTimeElapsed(0);
     startTimeRef.current = null;
+    pausedTimeRef.current = 0;
+    pauseStartRef.current = null;
     if (timerRef.current) {
       clearInterval(timerRef.current);
     }
@@ -163,12 +193,15 @@ export function useTyping({ text, onComplete, onKeystroke }: UseTypingOptions): 
     errors,
     isComplete,
     isStarted,
+    isPaused,
     wpm: wpm(),
     accuracy: accuracy(),
     streak,
     timeElapsed,
     currentKey,
     handleKeyPress,
+    pause,
+    resume,
     reset,
   };
 }
