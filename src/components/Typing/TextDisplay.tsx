@@ -62,6 +62,58 @@ function getLineBoundaries(lines: string[][]): number[] {
   return boundaries;
 }
 
+interface CharacterProps {
+  char: string;
+  index: number;
+  isTyped: boolean;
+  isCurrent: boolean;
+  isError: boolean;
+  wrongKey: string | null | undefined;
+  setCharRef: (index: number, el: HTMLSpanElement | null) => void;
+}
+
+const Character = memo(({ char, index, isTyped, isCurrent, isError, wrongKey, setCharRef }: CharacterProps) => {
+  const displayChar = char === ' ' ? '\u00A0' : char;
+  const showWrongKey = isCurrent && wrongKey;
+  const wrongDisplayChar = wrongKey === ' ' ? '␣' : wrongKey;
+
+  return (
+    <span
+      ref={(el) => setCharRef(index, el)}
+      className={`
+        relative inline-block
+        ${isTyped && !isError ? 'text-success' : ''}
+        ${isTyped && isError ? 'text-error bg-red-100 rounded' : ''}
+        ${isCurrent && !showWrongKey ? 'text-primary-600' : ''}
+        ${isCurrent && showWrongKey ? 'text-gray-300' : ''}
+        ${!isTyped && !isCurrent ? 'text-gray-400' : ''}
+      `}
+    >
+      {displayChar}
+      <AnimatePresence>
+        {showWrongKey && (
+          <motion.span
+            initial={{ opacity: 0, scale: 1.2 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0 }}
+            className="absolute inset-0 flex items-center justify-center text-error font-bold"
+          >
+            {wrongDisplayChar}
+          </motion.span>
+        )}
+      </AnimatePresence>
+      {isCurrent && (
+        <motion.span
+          initial={{ opacity: 1 }}
+          animate={{ opacity: [1, 0, 1] }}
+          transition={{ duration: 1, repeat: Infinity }}
+          className={`absolute -bottom-1 left-0 w-full h-0.5 ${showWrongKey ? 'bg-error' : 'bg-primary-500'}`}
+        />
+      )}
+    </span>
+  );
+});
+
 function TextDisplay({ text, currentIndex, errors, wrongKey, onCurrentCharPosition }: TextDisplayProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const charRefs = useRef<Map<number, HTMLSpanElement>>(new Map());
@@ -154,45 +206,18 @@ function TextDisplay({ text, currentIndex, errors, wrongKey, onCurrentCharPositi
                   const isTyped = index < currentIndex;
                   const isCurrent = index === currentIndex;
                   const isError = errors.includes(index);
-                  const displayChar = char === ' ' ? '\u00A0' : char;
-                  const showWrongKey = isCurrent && wrongKey;
-                  const wrongDisplayChar = wrongKey === ' ' ? '␣' : wrongKey;
                   
                   return (
-                    <span
+                    <Character
                       key={index}
-                      ref={(el) => setCharRef(index, el)}
-                      className={`
-                        relative inline-block
-                        ${isTyped && !isError ? 'text-success' : ''}
-                        ${isTyped && isError ? 'text-error bg-red-100 rounded' : ''}
-                        ${isCurrent && !showWrongKey ? 'text-primary-600' : ''}
-                        ${isCurrent && showWrongKey ? 'text-gray-300' : ''}
-                        ${!isTyped && !isCurrent ? 'text-gray-400' : ''}
-                      `}
-                    >
-                      {displayChar}
-                      <AnimatePresence>
-                        {showWrongKey && (
-                          <motion.span
-                            initial={{ opacity: 0, scale: 1.2 }}
-                            animate={{ opacity: 1, scale: 1 }}
-                            exit={{ opacity: 0 }}
-                            className="absolute inset-0 flex items-center justify-center text-error font-bold"
-                          >
-                            {wrongDisplayChar}
-                          </motion.span>
-                        )}
-                      </AnimatePresence>
-                      {isCurrent && (
-                        <motion.span
-                          initial={{ opacity: 1 }}
-                          animate={{ opacity: [1, 0, 1] }}
-                          transition={{ duration: 1, repeat: Infinity }}
-                          className={`absolute -bottom-1 left-0 w-full h-0.5 ${showWrongKey ? 'bg-error' : 'bg-primary-500'}`}
-                        />
-                      )}
-                    </span>
+                      index={index}
+                      char={char}
+                      isTyped={isTyped}
+                      isCurrent={isCurrent}
+                      isError={isError}
+                      wrongKey={isCurrent ? wrongKey : null}
+                      setCharRef={setCharRef}
+                    />
                   );
                 })}
               </div>

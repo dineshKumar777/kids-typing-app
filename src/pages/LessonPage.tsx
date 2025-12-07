@@ -13,8 +13,8 @@ export default function LessonPage() {
   const navigate = useNavigate();
   const lesson = getLessonById(Number(lessonId));
   
-  const { completeLession } = useUserStore();
-  const { settings } = useSettingsStore();
+  const completeLession = useUserStore(state => state.completeLession);
+  const settings = useSettingsStore(state => state.settings);
   const { playKeySound, speakKey } = useSound({ enabled: true });
   
   const [showComplete, setShowComplete] = useState(false);
@@ -27,8 +27,13 @@ export default function LessonPage() {
   });
   const [currentTextIndex, setCurrentTextIndex] = useState(0);
   const [isIdle, setIsIdle] = useState(false);
-  const [currentCharPosition, setCurrentCharPosition] = useState<{ x: number; y: number } | null>(null);
+  const charPositionRef = useRef<{ x: number; y: number } | null>(null);
   const idleTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  
+  // Callback to update char position without re-rendering
+  const handleCharPositionChange = useCallback((position: { x: number; y: number } | null) => {
+    charPositionRef.current = position;
+  }, []);
   
   // Check if this is a "learn" lesson with new keys - uses special introduction flow
   const isNewKeyLesson = lesson?.type === 'learn' && lesson?.newKeys && lesson.newKeys.length > 0;
@@ -339,7 +344,7 @@ export default function LessonPage() {
                 <div className="mb-4 sm:mb-6 lg:mb-8 relative">
                   {/* Idle indicator - positioned above current character */}
                   <AnimatePresence>
-                    {isStarted && isIdle && currentKey && currentCharPosition && (
+                    {isStarted && isIdle && currentKey && charPositionRef.current && (
                       <motion.div
                         initial={{ y: 10, opacity: 0 }}
                     animate={{ y: 0, opacity: 1 }}
@@ -347,8 +352,8 @@ export default function LessonPage() {
                     transition={{ type: 'spring', damping: 20 }}
                     className="absolute z-10 pointer-events-none"
                     style={{
-                      left: `${currentCharPosition.x - 20}px`,
-                      top: `${currentCharPosition.y - 45}px`,
+                      left: `${charPositionRef.current.x - 20}px`,
+                      top: `${charPositionRef.current.y - 45}px`,
                     }}
                   >
                     <div className="relative">
@@ -374,7 +379,7 @@ export default function LessonPage() {
                 currentIndex={currentIndex}
                 errors={errors}
                 wrongKey={wrongKey}
-                onCurrentCharPosition={setCurrentCharPosition}
+                onCurrentCharPosition={handleCharPositionChange}
               />
             </div>
             
