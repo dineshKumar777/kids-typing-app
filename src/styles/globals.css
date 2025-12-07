@@ -73,7 +73,7 @@ html {
 
 /* Typing area font */
 .font-typing {
-  font-family: 'Lato', system-ui, sans-serif;
+  font-family: 'Fira Code', 'Roboto Mono', monospace;
 }
 
 /* Text display styles */

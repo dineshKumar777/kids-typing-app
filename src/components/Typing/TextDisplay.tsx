@@ -81,11 +81,12 @@ const Character = memo(({ char, index, isTyped, isCurrent, isError, wrongKey, se
     <span
       ref={(el) => setCharRef(index, el)}
       className={`
-        relative inline-block
-        ${isTyped && !isError ? 'text-success' : ''}
-        ${isTyped && isError ? 'text-error bg-red-100 rounded' : ''}
-        ${isCurrent && !showWrongKey ? 'text-primary-600' : ''}
-        ${isCurrent && showWrongKey ? 'text-gray-300' : ''}
+        relative inline-flex items-center justify-center
+        min-w-[0.6em] px-0.5 rounded-md transition-all duration-75
+        ${isTyped && !isError ? 'text-success font-bold' : ''}
+        ${isTyped && isError ? 'text-error bg-red-100' : ''}
+        ${isCurrent && !showWrongKey ? 'bg-primary-500 text-gray-900 shadow-md scale-110 z-10' : ''}
+        ${isCurrent && showWrongKey ? 'bg-error text-white shadow-md scale-110 z-10' : ''}
         ${!isTyped && !isCurrent ? 'text-gray-400' : ''}
       `}
     >
@@ -93,21 +94,25 @@ const Character = memo(({ char, index, isTyped, isCurrent, isError, wrongKey, se
       <AnimatePresence>
         {showWrongKey && (
           <motion.span
-            initial={{ opacity: 0, scale: 1.2 }}
+            initial={{ opacity: 0, scale: 1.5 }}
             animate={{ opacity: 1, scale: 1 }}
             exit={{ opacity: 0 }}
-            className="absolute inset-0 flex items-center justify-center text-error font-bold"
+            className="absolute inset-0 flex items-center justify-center font-bold bg-error rounded-md"
           >
             {wrongDisplayChar}
           </motion.span>
         )}
       </AnimatePresence>
-      {isCurrent && (
-        <motion.span
-          initial={{ opacity: 1 }}
-          animate={{ opacity: [1, 0, 1] }}
-          transition={{ duration: 1, repeat: Infinity }}
-          className={`absolute -bottom-1 left-0 w-full h-0.5 ${showWrongKey ? 'bg-error' : 'bg-primary-500'}`}
+      {isCurrent && !showWrongKey && (
+        <motion.div
+          layoutId="cursor"
+          className="absolute inset-0 border-2 border-white/50 rounded-md"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: [0.5, 1, 0.5] }}
+          transition={{ 
+            layout: { duration: 0.1, type: "spring", stiffness: 500, damping: 30 },
+            opacity: { duration: 1.5, repeat: Infinity, ease: "linear" }
+          }}
         />
       )}
     </span>
@@ -197,10 +202,21 @@ function TextDisplay({ text, currentIndex, errors, wrongKey, onCurrentCharPositi
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -20 }}
             transition={{ duration: 0.25 }}
-            className={`typing-text font-typing ${fontSizeClass} tracking-wide flex flex-col gap-4 sm:gap-6 lg:gap-8`}
+            className={`typing-text font-typing ${fontSizeClass} tracking-wider leading-relaxed flex flex-col gap-6 sm:gap-8 lg:gap-10`}
           >
-            {visibleLines.map((lineChars, lineIdx) => (
-              <div key={visibleStartLine + lineIdx} className="flex justify-start flex-wrap gap-x-1">
+            {visibleLines.map((lineChars, lineIdx) => {
+              // Calculate opacity for focus mode
+              // The active line is fully opaque, others are dimmed
+              const isFocusedLine = (visibleStartLine + lineIdx) === currentLineIndex;
+              const lineOpacity = isFocusedLine ? 1 : 0.4;
+              
+              return (
+              <motion.div 
+                key={visibleStartLine + lineIdx} 
+                className="flex justify-start flex-wrap gap-x-1.5 gap-y-4"
+                animate={{ opacity: lineOpacity }}
+                transition={{ duration: 0.3 }}
+              >
                 {lineChars.map((char) => {
                   const index = charIndex++;
                   const isTyped = index < currentIndex;
@@ -220,8 +236,9 @@ function TextDisplay({ text, currentIndex, errors, wrongKey, onCurrentCharPositi
                     />
                   );
                 })}
-              </div>
-            ))}
+              </motion.div>
+            );
+            })}
           </motion.div>
         </AnimatePresence>
       </div>
