@@ -1,4 +1,4 @@
-import { useState, useCallback, useMemo } from 'react';
+import { useState, useCallback, useMemo, memo, useRef, useLayoutEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { keyMap } from '../../data/keyMappings';
 import { useKeyboardInput, useSound } from '../../hooks';
@@ -38,6 +38,80 @@ function getFingerName(key: string): string {
   return fingerMap[keyInfo.finger] || 'finger';
 }
 
+const GoodJobView = memo(({ newKeys, onContinue }: { newKeys: string[], onContinue: () => void }) => (
+  <motion.div
+    initial={{ opacity: 0 }}
+    animate={{ opacity: 1 }}
+    className="flex flex-col items-center justify-center py-12 px-4"
+  >
+    {/* Checkmark Circle - Optimized animation */}
+    <motion.div
+      initial={{ scale: 0.5, opacity: 0 }}
+      animate={{ scale: 1, opacity: 1 }}
+      transition={{ type: 'spring', duration: 0.5, bounce: 0.4 }}
+      className="relative mb-6"
+    >
+      <div className="w-32 h-32 sm:w-40 sm:h-40 rounded-full bg-gray-100 flex items-center justify-center">
+        <div className="w-28 h-28 sm:w-36 sm:h-36 rounded-full bg-success flex items-center justify-center shadow-lg">
+          <svg
+            className="w-16 h-16 sm:w-20 sm:h-20 text-white"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+            strokeWidth={3}
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          >
+            <motion.path
+              d="M5 13l4 4L19 7"
+              initial={{ pathLength: 0 }}
+              animate={{ pathLength: 1 }}
+              transition={{ duration: 0.4, ease: "easeOut", delay: 0.2 }}
+            />
+          </svg>
+        </div>
+      </div>
+    </motion.div>
+    
+    {/* Good Job Text */}
+    <motion.h2
+      initial={{ opacity: 0, y: 10 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ delay: 0.3, duration: 0.3 }}
+      className="text-2xl sm:text-3xl font-display font-bold text-gray-700 uppercase tracking-wider mb-6"
+    >
+      Good Job!
+    </motion.h2>
+    
+    {/* Next Practice Preview */}
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      transition={{ delay: 0.4, duration: 0.3 }}
+      className="text-center"
+    >
+      <p className="text-lg text-gray-600 mb-4">Next we will practice</p>
+      <div className="flex gap-3 justify-center mb-8">
+        {newKeys.map((key, index) => (
+          <div
+            key={index}
+            className="w-14 h-14 sm:w-16 sm:h-16 border-2 border-gray-200 rounded-xl flex items-center justify-center text-2xl sm:text-3xl font-mono text-gray-700 bg-white shadow-sm"
+          >
+            {key === ' ' ? '␣' : key}
+          </div>
+        ))}
+      </div>
+      
+      <button
+        onClick={onContinue}
+        className="bg-primary-500 hover:bg-primary-600 text-white px-8 py-3 rounded-xl font-bold text-lg transition-all shadow-lg hover:shadow-xl hover:-translate-y-0.5 active:translate-y-0"
+      >
+        Start Practice →
+      </button>
+    </motion.div>
+  </motion.div>
+));
+
 export default function NewKeyIntroduction({ 
   newKeys, 
   lessonKeys, 
@@ -68,6 +142,39 @@ export default function NewKeyIntroduction({
   
   const currentNewKey = newKeys[currentKeyIndex];
   const currentPracticeChar = practiceText[practiceIndex];
+
+  // Use a ref to track current state for event handlers to avoid stale closures
+  const stateRef = useRef({
+    phase,
+    currentKeyIndex,
+    keyPressCount,
+    practiceIndex,
+    errors,
+    startTime,
+    isPracticeStarted,
+    currentNewKey,
+    currentPracticeChar,
+    settings,
+    newKeys,
+    practiceText
+  });
+
+  useLayoutEffect(() => {
+    stateRef.current = {
+      phase,
+      currentKeyIndex,
+      keyPressCount,
+      practiceIndex,
+      errors,
+      startTime,
+      isPracticeStarted,
+      currentNewKey,
+      currentPracticeChar,
+      settings,
+      newKeys,
+      practiceText
+    };
+  });
   
   // Sliding window of 6 keys
   const WINDOW_SIZE = 6;
@@ -85,10 +192,11 @@ export default function NewKeyIntroduction({
   
   // Handle key intro phase
   const handleKeyIntroPress = useCallback((key: string) => {
-    if (phase !== 'key-intro') return;
+    const state = stateRef.current;
+    if (state.phase !== 'key-intro') return;
     
-    if (key.toLowerCase() === currentNewKey.toLowerCase()) {
-      if (settings.keyboardSoundEnabled) {
+    if (key.toLowerCase() === state.currentNewKey.toLowerCase()) {
+      if (state.settings.keyboardSoundEnabled) {
         playKeySound();
       }
       
@@ -97,12 +205,12 @@ export default function NewKeyIntroduction({
       setShowKeyFeedback(true);
       setTimeout(() => setShowKeyFeedback(false), 300);
       
-      const newCount = keyPressCount + 1;
+      const newCount = state.keyPressCount + 1;
       setKeyPressCount(newCount);
       
       if (newCount >= requiredPresses) {
         // Move to next key or transition phase
-        if (currentKeyIndex < newKeys.length - 1) {
+        if (state.currentKeyIndex < state.newKeys.length - 1) {
           setCurrentKeyIndex(prev => prev + 1);
           setKeyPressCount(0);
         } else {
@@ -111,43 +219,44 @@ export default function NewKeyIntroduction({
         }
       }
     }
-  }, [phase, currentNewKey, keyPressCount, currentKeyIndex, newKeys.length, settings.keyboardSoundEnabled, playKeySound, updatePhase]);
+  }, [playKeySound, updatePhase]);
   
   // Handle practice phase
   const handlePracticePress = useCallback((key: string) => {
-    if (phase !== 'practice') return;
+    const state = stateRef.current;
+    if (state.phase !== 'practice') return;
     
     // Mark practice as started on first keypress
-    if (!isPracticeStarted) {
+    if (!state.isPracticeStarted) {
       setIsPracticeStarted(true);
     }
     
-    if (!startTime) {
+    if (!state.startTime) {
       setStartTime(Date.now());
     }
     
-    if (settings.keyboardSoundEnabled) {
+    if (state.settings.keyboardSoundEnabled) {
       playKeySound();
     }
     
-    if (key.toLowerCase() === currentPracticeChar?.toLowerCase()) {
+    if (key.toLowerCase() === state.currentPracticeChar?.toLowerCase()) {
       // Correct key
       setWrongKeyFeedback(false);
       setWrongKeyPressed(null);
       
-      const nextIndex = practiceIndex + 1;
+      const nextIndex = state.practiceIndex + 1;
       setPracticeIndex(nextIndex);
       
       // Speak next key
-      if (settings.voiceOverEnabled && practiceText[nextIndex]) {
-        speakKey(practiceText[nextIndex]);
+      if (state.settings.voiceOverEnabled && state.practiceText[nextIndex]) {
+        speakKey(state.practiceText[nextIndex]);
       }
       
       // Check if complete
-      if (nextIndex >= practiceText.length) {
-        const totalTime = startTime ? (Date.now() - startTime) / 1000 : 0;
-        const totalChars = practiceText.length;
-        const errorCount = errors.length;
+      if (nextIndex >= state.practiceText.length) {
+        const totalTime = state.startTime ? (Date.now() - state.startTime) / 1000 : 0;
+        const totalChars = state.practiceText.length;
+        const errorCount = state.errors.length;
         const accuracy = Math.round(((totalChars - errorCount) / totalChars) * 100);
         const wpm = totalTime > 0 ? Math.round((totalChars / 5) / (totalTime / 60)) : 0;
         
@@ -162,20 +271,23 @@ export default function NewKeyIntroduction({
         setWrongKeyPressed(null);
       }, 500);
       
-      if (!errors.includes(practiceIndex)) {
-        setErrors(prev => [...prev, practiceIndex]);
+      if (!state.errors.includes(state.practiceIndex)) {
+        setErrors(prev => [...prev, state.practiceIndex]);
       }
     }
-  }, [phase, currentPracticeChar, practiceIndex, practiceText, startTime, errors, settings, playKeySound, speakKey, onComplete, isPracticeStarted]);
+  }, [playKeySound, speakKey, onComplete]);
   
   // Combined key handler
   useKeyboardInput({
     onKeyPress: (key) => {
-      if (phase === 'key-intro') {
+      // Read phase from ref to ensure we use the latest phase even if render is pending
+      const currentPhase = stateRef.current.phase;
+      
+      if (currentPhase === 'key-intro') {
         handleKeyIntroPress(key);
-      } else if (phase === 'practice') {
+      } else if (currentPhase === 'practice') {
         handlePracticePress(key);
-      } else if (phase === 'good-job' && (key === 'Enter' || key === '\n')) {
+      } else if (currentPhase === 'good-job' && (key === 'Enter' || key === '\n')) {
         handleContinueToPractice();
       }
     },
@@ -259,91 +371,10 @@ export default function NewKeyIntroduction({
   // Good Job Transition Phase
   if (phase === 'good-job') {
     return (
-      <motion.div
-        initial={{ opacity: 0, scale: 0.9 }}
-        animate={{ opacity: 1, scale: 1 }}
-        className="flex flex-col items-center justify-center py-12 px-4"
-      >
-        {/* Checkmark Circle */}
-        <motion.div
-          initial={{ scale: 0 }}
-          animate={{ scale: 1 }}
-          transition={{ type: 'spring', damping: 10, stiffness: 100 }}
-          className="relative mb-6"
-        >
-          {/* Outer ring */}
-          <div className="w-32 h-32 sm:w-40 sm:h-40 rounded-full bg-gray-200 flex items-center justify-center">
-            {/* Inner circle */}
-            <motion.div
-              initial={{ scale: 0 }}
-              animate={{ scale: 1 }}
-              transition={{ delay: 0.2, type: 'spring', damping: 10 }}
-              className="w-28 h-28 sm:w-36 sm:h-36 rounded-full bg-success flex items-center justify-center"
-            >
-              {/* Checkmark */}
-              <motion.svg
-                initial={{ pathLength: 0, opacity: 0 }}
-                animate={{ pathLength: 1, opacity: 1 }}
-                transition={{ delay: 0.4, duration: 0.5 }}
-                className="w-16 h-16 sm:w-20 sm:h-20 text-white"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-                strokeWidth={3}
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              >
-                <motion.path
-                  d="M5 13l4 4L19 7"
-                  initial={{ pathLength: 0 }}
-                  animate={{ pathLength: 1 }}
-                  transition={{ delay: 0.4, duration: 0.5 }}
-                />
-              </motion.svg>
-            </motion.div>
-          </div>
-        </motion.div>
-        
-        {/* Good Job Text */}
-        <motion.h2
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.5 }}
-          className="text-2xl sm:text-3xl font-display font-bold text-gray-700 uppercase tracking-wider mb-6"
-        >
-          Good Job!
-        </motion.h2>
-        
-        {/* Next Practice Preview */}
-        <motion.div
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.7 }}
-          className="text-center"
-        >
-          <p className="text-lg text-gray-600 mb-4">Next we will practice</p>
-          <div className="flex gap-3 justify-center mb-8">
-            {newKeys.map((key, index) => (
-              <div
-                key={index}
-                className="w-14 h-14 sm:w-16 sm:h-16 border-2 border-gray-300 rounded-lg flex items-center justify-center text-2xl sm:text-3xl font-mono text-gray-700 bg-white"
-              >
-                {key === ' ' ? '␣' : key}
-              </div>
-            ))}
-          </div>
-          
-          <motion.button
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 1 }}
-            onClick={handleContinueToPractice}
-            className="bg-primary-500 hover:bg-primary-600 text-white px-8 py-3 rounded-xl font-bold text-lg transition-colors shadow-lg"
-          >
-            Start Practice →
-          </motion.button>
-        </motion.div>
-      </motion.div>
+      <GoodJobView 
+        newKeys={newKeys} 
+        onContinue={handleContinueToPractice} 
+      />
     );
   }
   
