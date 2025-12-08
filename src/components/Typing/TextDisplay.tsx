@@ -82,22 +82,22 @@ const Character = memo(({ char, index, isTyped, isCurrent, isError, wrongKey, se
       ref={(el) => setCharRef(index, el)}
       className={`
         relative inline-flex items-center justify-center
-        min-w-[0.6em] px-0.5 rounded-md transition-all duration-75
+        min-w-[0.6em] px-0.5 rounded-md
         ${isTyped && !isError ? 'text-success font-bold' : ''}
         ${isTyped && isError ? 'text-error bg-red-100' : ''}
-        ${isCurrent && !showWrongKey ? 'bg-primary-500 text-gray-900 shadow-md scale-110 z-10' : ''}
-        ${isCurrent && showWrongKey ? 'bg-error text-white shadow-md scale-110 z-10' : ''}
+        ${isCurrent && !showWrongKey ? 'text-gray-900 z-10' : ''}
+        ${isCurrent && showWrongKey ? 'bg-error text-white shadow-md z-10' : ''}
         ${!isTyped && !isCurrent ? 'text-gray-400' : ''}
       `}
     >
-      {displayChar}
+      <span className="relative z-10">{displayChar}</span>
       <AnimatePresence>
         {showWrongKey && (
           <motion.span
             initial={{ opacity: 0, scale: 1.5 }}
             animate={{ opacity: 1, scale: 1 }}
             exit={{ opacity: 0 }}
-            className="absolute inset-0 flex items-center justify-center font-bold bg-error rounded-md"
+            className="absolute inset-0 flex items-center justify-center font-bold bg-error rounded-md z-20"
           >
             {wrongDisplayChar}
           </motion.span>
@@ -106,12 +106,10 @@ const Character = memo(({ char, index, isTyped, isCurrent, isError, wrongKey, se
       {isCurrent && !showWrongKey && (
         <motion.div
           layoutId="cursor"
-          className="absolute inset-0 border-2 border-white/50 rounded-md"
-          initial={{ opacity: 0 }}
-          animate={{ opacity: [0.5, 1, 0.5] }}
+          className="absolute inset-0 bg-primary-500 rounded-md shadow-md"
+          initial={false}
           transition={{ 
-            layout: { duration: 0.1, type: "spring", stiffness: 500, damping: 30 },
-            opacity: { duration: 1.5, repeat: Infinity, ease: "linear" }
+            layout: { duration: 0.12, type: "spring", stiffness: 500, damping: 30 }
           }}
         />
       )}

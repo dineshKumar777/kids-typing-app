@@ -11,6 +11,8 @@ interface NewKeyIntroductionProps {
   lessonKeys: string[];
   practiceText: string;
   onComplete: (stats: { wpm: number; accuracy: number; totalTime: number }) => void;
+  initialPhase?: 'key-intro' | 'practice';
+  onPhaseChange?: (phase: 'key-intro' | 'good-job' | 'practice') => void;
 }
 
 type IntroPhase = 'key-intro' | 'good-job' | 'practice';
@@ -36,8 +38,20 @@ function getFingerName(key: string): string {
   return fingerMap[keyInfo.finger] || 'finger';
 }
 
-export default function NewKeyIntroduction({ newKeys, lessonKeys, practiceText, onComplete }: NewKeyIntroductionProps) {
-  const [phase, setPhase] = useState<IntroPhase>('key-intro');
+export default function NewKeyIntroduction({ 
+  newKeys, 
+  lessonKeys, 
+  practiceText, 
+  onComplete,
+  initialPhase = 'key-intro',
+  onPhaseChange
+}: NewKeyIntroductionProps) {
+  const [phase, setPhase] = useState<IntroPhase>(initialPhase);
+
+  const updatePhase = useCallback((newPhase: IntroPhase) => {
+    setPhase(newPhase);
+    onPhaseChange?.(newPhase);
+  }, [onPhaseChange]);
   const [currentKeyIndex, setCurrentKeyIndex] = useState(0);
   const [keyPressCount, setKeyPressCount] = useState(0);
   const [practiceIndex, setPracticeIndex] = useState(0);
@@ -93,11 +107,11 @@ export default function NewKeyIntroduction({ newKeys, lessonKeys, practiceText, 
           setKeyPressCount(0);
         } else {
           // All keys introduced, show good job
-          setPhase('good-job');
+          updatePhase('good-job');
         }
       }
     }
-  }, [phase, currentNewKey, keyPressCount, currentKeyIndex, newKeys.length, settings.keyboardSoundEnabled, playKeySound]);
+  }, [phase, currentNewKey, keyPressCount, currentKeyIndex, newKeys.length, settings.keyboardSoundEnabled, playKeySound, updatePhase]);
   
   // Handle practice phase
   const handlePracticePress = useCallback((key: string) => {
@@ -171,11 +185,11 @@ export default function NewKeyIntroduction({ newKeys, lessonKeys, practiceText, 
   
   // Auto-advance from good-job phase after animation
   const handleContinueToPractice = useCallback(() => {
-    setPhase('practice');
+    updatePhase('practice');
     if (settings.voiceOverEnabled && practiceText[0]) {
       setTimeout(() => speakKey(practiceText[0]), 300);
     }
-  }, [settings.voiceOverEnabled, practiceText, speakKey]);
+  }, [settings.voiceOverEnabled, practiceText, speakKey, updatePhase]);
   
   // Key Introduction Phase
   if (phase === 'key-intro') {

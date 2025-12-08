@@ -26,6 +26,8 @@ export default function LessonPage() {
     points: 0,
   });
   const [currentTextIndex, setCurrentTextIndex] = useState(0);
+  const [retryCount, setRetryCount] = useState(0);
+  const [introCompleted, setIntroCompleted] = useState(false);
   const [isIdle, setIsIdle] = useState(false);
   const charPositionRef = useRef<{ x: number; y: number } | null>(null);
   const idleTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -165,6 +167,7 @@ export default function LessonPage() {
     setShowComplete(false);
     setIsIdle(false);
     resetTyping();
+    setRetryCount(c => c + 1);
   }, [resetTyping]);
   
   // Handle new key introduction completion
@@ -219,6 +222,7 @@ export default function LessonPage() {
     setCurrentTextIndex(0);
     setShowComplete(false);
     setIsIdle(false);
+    setIntroCompleted(false);
   }, [lessonId, resetTyping]);
   
   // Check if lesson exists
@@ -313,11 +317,17 @@ export default function LessonPage() {
             {isNewKeyLesson ? (
               <div className="bg-white rounded-2xl shadow-lg overflow-hidden">
                 <NewKeyIntroduction
-                  key={lessonId}
+                  key={`${lessonId}-${retryCount}`}
                   newKeys={lesson.newKeys!}
                   lessonKeys={lesson.keys}
                   practiceText={currentText}
                   onComplete={handleNewKeyIntroComplete}
+                  initialPhase={introCompleted ? 'practice' : 'key-intro'}
+                  onPhaseChange={(phase) => {
+                    if (phase === 'practice') {
+                      setIntroCompleted(true);
+                    }
+                  }}
                 />
               </div>
             ) : (
